@@ -11,7 +11,7 @@
 
 ---
 
-## `[TOC]`1. Introduction
+<h2 id="1">1. Introduction</h2>
 
 This document describes how to build AllWinner UEFI Firmware and bring a AllWinner dev board up with it. 
 The AllWinner UEFI Firmware, as the major boot system for AllWinner-Windows platform, 
