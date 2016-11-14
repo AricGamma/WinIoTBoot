@@ -1,0 +1,85 @@
+#/** @file
+#  
+#  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+#  http://www.allwinnertech.com
+#
+#  Martin.Zheng <martinzheng@allwinnertech.com>
+#  
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#  
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SdMmcDxe
+  FILE_GUID                      = 688AA2F3-4826-4AE8-A389-E4DFB4735BB3
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+
+  ENTRY_POINT                    = SunxiSdMmcDxeInitialize
+
+[Sources.common]
+  mmc.c
+  mmc_op.c
+  mmc_write.c
+  mmc_test.c
+
+  sunxi_mmc.c
+  sunxi_host_mmc.c
+  sunxi_mmc_interface.c
+  sunxi_mmc_tuning.c
+  sunxi_host0_2_v4p1.c
+  
+  SdMmcDxe.c
+  eMMCFlashIo.c
+  eMMCFsIo.c
+  
+[Packages]
+  EmbeddedPkg/EmbeddedPkg.dec
+  MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  UefiLib
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  DxeServicesTableLib
+  BaseMemoryLib
+  ArmLib
+  IoLib
+  TimerLib
+  DmaLib
+  DebugLib
+  PrintLib
+  ArmPlatformLib
+  SysConfigLib
+  SunxiBootInfoLib
+  SunxiCheckLib
+  SunxiPartitionLib
+  SunxiCommonLib
+
+[Guids]
+	gSdMmc0DevicePathGuid
+	gSdMmc2DevicePathGuid
+	gSunxiFsDevicePathGuid
+	
+[Protocols]
+  gEfiCpuArchProtocolGuid
+  gEfiDevicePathProtocolGuid
+  gEfiBlockIoProtocolGuid
+  gSunxiFlashIoProtocolGuid
+  
+[Pcd]
+ gArmTokenSpaceGuid.PcdFdBaseAddress
+  
+[Depex]
+  TRUE

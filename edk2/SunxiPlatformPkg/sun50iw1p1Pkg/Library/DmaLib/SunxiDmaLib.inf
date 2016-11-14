@@ -1,0 +1,56 @@
+#/** @file
+#  
+#  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+#  http://www.allwinnertech.com
+#
+#  Martin.Zheng <martinzheng@allwinnertech.com>
+#  
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#  
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Sun8iW1DmaLib
+  FILE_GUID                      = 09B17D99-BB07-49a8-B0D2-06D6AFCBE3AB
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = SunxiDmaLib 
+  CONSTRUCTOR                    = SunxiDmaLibConstructor
+
+[Sources.common]
+  SunxiDmaLib.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  ArmPkg/ArmPkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+  SunxiPlatformPkg/sun50iw1p1Pkg/sun50iw1p1Pkg.dec
+  
+[LibraryClasses]
+  DebugLib
+  UefiBootServicesTableLib
+  MemoryAllocationLib
+  UncachedMemoryAllocationLib
+  IoLib
+  BaseMemoryLib
+  ArmLib
+  UefiDriverEntryPoint
+  
+  
+[Protocols]
+  gHardwareInterruptProtocolGuid
+  
+[Guids]
+ 
+[Pcd]
+
+[Depex]
+  gHardwareInterruptProtocolGuid

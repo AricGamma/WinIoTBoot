@@ -1,0 +1,327 @@
+/** @file
+*
+*  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+*  http://www.allwinnertech.com
+*
+*  YingLanFeng <yinglanfeng@allwinnertech.com>
+*  
+*  This program and the accompanying materials                          
+*  are licensed and made available under the terms and conditions of the BSD License         
+*  which accompanies this distribution.  The full text of the license may be found at        
+*  http://opensource.org/licenses/bsd-license.php                                            
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+*
+**/
+
+#include <ArmPlatform.h>
+
+/* The detail information of DMA configuration */
+/******************************************************/
+#define DATA_WITH_8BIT   (0)
+#define DATA_WITH_16BIT  (1)
+#define DATA_WITH_32BIT  (2)
+#define DATA_WITH_64BIT  (3)
+
+#define BURST_SIZE_1     (0)
+#define BURST_SIZE_4     (1)
+#define BURST_SIZE_8     (2)
+#define BURST_SIZE_16    (3)
+
+/* src drq type */
+enum DRQSRC_TYPE_E {
+	DRQSRC_SRAM			= 0,
+	DRQSRC_SDRAM		= 1,
+	DRQSRC_OWARX		= 2,
+	DRQSRC_DAUDIO_0_RX	= 3,
+	DRQSRC_DAUDIO_1_RX	= 4,
+	DRQSRC_NAND0		= 5,
+	DRQSRC_UART0RX		= 6,
+	DRQSRC_UART1RX		= 7,
+	DRQSRC_UART2RX		= 8,
+	DRQSRC_UART3RX		= 9,
+	DRQSRC_UART4RX		= 10,
+  DRQSRC_AUDIO_CODEC = 15,
+	DRQSRC_CE_RX			= 16,
+	DRQSRC_OTG_EP1		= 17,
+	DRQSRC_OTG_EP2		= 18,
+	DRQSRC_OTG_EP3		= 19,
+	DRQSRC_OTG_EP4		= 20,
+	DRQSRC_OTG_EP5		= 21,
+
+	DRQSRC_SPI0RX		= 23,
+	DRQSRC_SPI1RX		= 24,
+};
+
+/* dst drq type */
+enum DRQDST_TYPE_E {
+	DRQDST_SRAM			= 0,
+	DRQDST_SDRAM		= 1,
+	DRQDST_OWA_TX		= 2,
+	DRQDST_DAUDIO_0_TX	= 3,
+	DRQDST_DAUDIO_1_TX	= 4,
+	DRQDST_NAND0		= 5,
+	DRQDST_UART0TX		= 6,
+	DRQDST_UART1TX		= 7,
+	DRQDST_UART2TX		= 8,
+	DRQDST_UART3TX		= 9,
+	DRQDST_UART4TX		= 10,
+	DRQDST_AUDIO_CODEC	= 15,
+	DRQDST_CE_TX			= 16,
+	DRQDST_OTG_EP1		= 17,
+	DRQDST_OTG_EP2		= 18,
+	DRQDST_OTG_EP3		= 19,
+	DRQDST_OTG_EP4		= 20,
+	DRQDST_OTG_EP5		= 21,
+	DRQDST_SPI0TX		= 23,
+	DRQDST_SPI1TX		= 24,
+	DRQDST_DAUDIO2_TX		= 27,
+
+};
+
+#define SRC_WIDTH(x)	((x) << 9)
+#define SRC_BURST(x)	((x) << 6)
+#define SRC_IO_MODE	(0x01 << 5)
+#define SRC_LINEAR_MODE	(0x00 << 5)
+#define SRC_DRQ(x)	((x) << 0)
+
+#define DST_WIDTH(x)	((x) << 25)
+#define DST_BURST(x)	((x) << 22)
+#define DST_IO_MODE	(0x01 << 21)
+#define DST_LINEAR_MODE	(0x00 << 21)
+#define DST_DRQ(x)	((x) << 16)
+
+
+#define NORMAL_WAIT	(8 << 0)
+/******************************************************/
+
+
+
+#define ACPI_5_0_CSRT_VERSION   				0x1
+
+#define ACPI_RESOURCE_GROUP_NUM 				0x1
+#define ACPI_RESOURCE_DESCRIPTOR_CHANNEL_NUM 	8
+
+/*resource group header*/
+typedef struct 
+{
+	UINT32 Length;
+	UINT32 VendorID;
+	UINT32 SubvendorID;
+	UINT16 DeviceID;
+	UINT16 SubdeviceID;
+	UINT16 Revision;
+	UINT16 Reserved;
+	UINT32 SharedInfoLength;
+}EFI_ACPI_5_0_CRST_RESOURCE_GROUP_HEADER;
+
+/*resource descriptor header*/
+typedef struct 
+{
+	UINT32 Length;
+	UINT16 ResourceType;
+	UINT16 ResourceSubType;
+	UINT32 UID;
+	UINT32 MMIOBaseAddressLow;
+	UINT32 MMIOBaseAddressHigh; 
+	UINT32 MappingSize;
+	UINT32 GSIInterrupt;
+	UINT32 InterruptMode;
+	UINT32 InterruptPolarity;
+	UINT32 NumChannels;
+	UINT32 ChannelCfg[ACPI_RESOURCE_DESCRIPTOR_CHANNEL_NUM];
+}EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CONTROLLER;
+
+/*resource descriptor header*/
+typedef struct 
+{
+	UINT32 Length;
+	UINT16 ResourceType;
+	UINT16 ResourceSubType;
+	UINT32 UID;
+	UINT32 ChannelNumber;
+}EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CHANNEL;
+
+/*resource group header*/
+typedef struct 
+{
+  EFI_ACPI_5_0_CRST_RESOURCE_GROUP_HEADER head;
+  EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CONTROLLER controller;
+  EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CHANNEL	channel[ACPI_RESOURCE_DESCRIPTOR_CHANNEL_NUM]; 
+}EFI_ACPI_5_0_CRST_RESOURCE_GROUP0;
+
+/*CSRT structure*/
+typedef struct {
+    EFI_ACPI_DESCRIPTION_HEADER Header;
+    EFI_ACPI_5_0_CRST_RESOURCE_GROUP0 ResourceGroup0;
+} EFI_ACPI_5_0_CORE_SYSTEM_RESOURCE_TABLE;
+
+EFI_ACPI_5_0_CORE_SYSTEM_RESOURCE_TABLE Csrt = {   
+	/*EFI_ACPI_DESCRIPTION_HEADER */ 
+  	{
+		EFI_ACPI_5_0_CORE_SYSTEM_RESOURCE_TABLE_SIGNATURE,
+		sizeof (EFI_ACPI_5_0_CORE_SYSTEM_RESOURCE_TABLE),
+		ACPI_5_0_CSRT_VERSION,
+		0x00,                                                     // Checksum will be updated at runtime
+		{EFI_ACPI_OEM_ID},
+		EFI_ACPI_OEM_TABLE_ID,
+		EFI_ACPI_OEM_REVISION,
+		EFI_ACPI_CREATOR_ID,
+		EFI_ACPI_CREATOR_REVISION 
+  	},
+  	/*EFI_ACPI_5_0_CRST_RESOURCE_GROUP0*/
+  	{
+  		/*EFI_ACPI_5_0_CRST_RESOURCE_GROUP_HEADER*/
+    	{
+    		sizeof(EFI_ACPI_5_0_CRST_RESOURCE_GROUP0),       /*Length*/
+    		EFI_ACPI_CREATOR_ID,                            /*VendorID*/
+    		0,                                              /*SubvendorID*/     
+    		0x000B,                                         /*DeviceID*/
+    		0x0,                                            /*SubdeviceID*/
+    		0002,                                           /*Revision*/
+    		0,                                              /*Reserved*/
+    		0,           								                  	/*SharedInfoLength*/
+    		
+    	},
+    	
+    	/*EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CONTROLLER*/
+    	{
+        	sizeof(EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CONTROLLER),  	/*Length*/
+        	0x3,                                            			/*ResourceType*/
+        	0x1,                                            			/*ResourceSubType*/
+        	SIGNATURE_32('D','M','A','C'),								/*UID*/
+        	0x01c02000, 												/*MMIOBaseAddressLow*/
+        	0x00000000,													/*MMIOBaseAddressHight*/
+        	0x4E0,														/*MappingSize*/
+        	82,															/*GSIInterrupt*/
+		      0,															/*InterruptMode*/
+        	1,															/*InterruptPolarity*/
+      		ACPI_RESOURCE_DESCRIPTOR_CHANNEL_NUM,						/*NumChannels*/  
+      		{
+      		  /* DMA channel 0 config audio codec TX*/
+      			SRC_DRQ(DRQSRC_SDRAM)|DST_DRQ(DRQDST_AUDIO_CODEC)|\
+						SRC_BURST(BURST_SIZE_4)|DST_BURST(BURST_SIZE_4)|\
+						SRC_LINEAR_MODE|DST_IO_MODE|\
+						SRC_WIDTH(DATA_WITH_16BIT)|DST_WIDTH(DATA_WITH_16BIT),
+						
+						/* DMA channel 1 config audio codec RX*/
+						SRC_DRQ(DRQSRC_AUDIO_CODEC)|DST_DRQ(DRQDST_SDRAM)|\
+						SRC_BURST(BURST_SIZE_4)|DST_BURST(BURST_SIZE_4)|\
+						SRC_IO_MODE|DST_LINEAR_MODE|\
+						DST_WIDTH(DATA_WITH_16BIT)|SRC_WIDTH(DATA_WITH_16BIT),
+						
+						/* DMA channel 2 config uart0  TX*/
+      			SRC_DRQ(DRQSRC_SDRAM)|DST_DRQ(DRQDST_UART0TX)|\
+						SRC_BURST(BURST_SIZE_4)|DST_BURST(BURST_SIZE_4)|\
+						SRC_LINEAR_MODE|DST_IO_MODE|\
+						SRC_WIDTH(DATA_WITH_8BIT)|DST_WIDTH(DATA_WITH_8BIT),
+						
+						/* DMA channel 3 config uart0  RX*/
+      			SRC_DRQ(DRQSRC_UART0RX)|DST_DRQ(DRQSRC_SDRAM)|\
+						SRC_BURST(BURST_SIZE_4)|DST_BURST(BURST_SIZE_4)|\
+						SRC_IO_MODE|DST_LINEAR_MODE|\
+						SRC_WIDTH(DATA_WITH_8BIT)|DST_WIDTH(DATA_WITH_8BIT),
+						
+						/* DMA channel 4 config OTG  TX*/
+      			SRC_DRQ(DRQSRC_SDRAM)|DST_DRQ(DRQSRC_OTG_EP1)|\
+						SRC_BURST(BURST_SIZE_4)|DST_BURST(BURST_SIZE_4)|\
+						SRC_LINEAR_MODE|DST_IO_MODE|\
+						SRC_WIDTH(DATA_WITH_32BIT)|DST_WIDTH(DATA_WITH_32BIT),
+						
+						/* DMA channel 5 config OTG  RX*/
+      			SRC_DRQ(DRQSRC_SDRAM)|DST_DRQ(DRQDST_OTG_EP1)|\
+						SRC_BURST(BURST_SIZE_4)|DST_BURST(BURST_SIZE_4)|\
+						SRC_IO_MODE|DST_LINEAR_MODE|\
+						SRC_WIDTH(DATA_WITH_32BIT)|DST_WIDTH(DATA_WITH_32BIT),
+						
+						/* DMA channel 6 config DMA TEST TX*/
+      			SRC_DRQ(DRQSRC_SDRAM)|DST_DRQ(DRQDST_SDRAM)|\
+						SRC_BURST(BURST_SIZE_4)|DST_BURST(BURST_SIZE_4)|\
+						SRC_LINEAR_MODE|SRC_LINEAR_MODE|\
+						SRC_WIDTH(DATA_WITH_32BIT)|DST_WIDTH(DATA_WITH_32BIT),
+						
+						/* DMA channel 7 config DMA TEST  RX*/
+      			SRC_DRQ(DRQSRC_SDRAM)|DST_DRQ(DRQDST_SDRAM)|\
+						SRC_BURST(BURST_SIZE_4)|DST_BURST(BURST_SIZE_4)|\
+						SRC_LINEAR_MODE|SRC_LINEAR_MODE|\
+						SRC_WIDTH(DATA_WITH_32BIT)|DST_WIDTH(DATA_WITH_32BIT),
+					}
+					  
+      },
+      
+      /*EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CHANNEL*/
+
+    	{ 
+      		{
+        		sizeof(EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CHANNEL),  /*Length*/
+        		0x3,                                            		/*ResourceType*/
+		        0x0,                                            		/*ResourceSubType*/
+		        SIGNATURE_32('C','O','D','T'),                          /*UID*/
+		        0														/*channel number*/
+      		},
+	      	{
+		        sizeof(EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CHANNEL),  /*Length*/
+		        0x3,                                            		/*ResourceType*/
+		        0x0,                                            		/*ResourceSubType*/
+		        SIGNATURE_32('C','O','D','R'),                          /*UID*/
+		        1											    		/*channel number*/
+	      	},
+	      	{
+		        sizeof(EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CHANNEL),  /*Length*/
+		        0x3,                                            		/*ResourceType*/
+		        0x0,                                            		/*ResourceSubType*/
+		        SIGNATURE_32('U','A','0','T'),                          /*UID*/
+		        2														/*channel number*/
+	      	},
+	      	{
+		        sizeof(EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CHANNEL),  /*Length*/
+		        0x3,                                            		/*ResourceType*/
+		        0x0,                                            		/*ResourceSubType*/
+		        SIGNATURE_32('U','A','0','R'),                          /*UID*/
+		 		3														/*channel number*/	     
+	      	},
+	      	{
+		        sizeof(EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CHANNEL),  /*Length*/
+		        0x3,                                            		/*ResourceType*/
+		        0x0,                                            		/*ResourceSubType*/
+		        SIGNATURE_32('O','T','G','T'),                   		/*UID*/
+		        4														/*channel number*/
+	      	},
+	      	{
+		        sizeof(EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CHANNEL),  /*Length*/
+		        0x3,                                            		/*ResourceType*/
+		        0x0,                                            		/*ResourceSubType*/
+		        SIGNATURE_32('O','T','G','R'),                                       		/*UID*/
+		      	5														/*channel number*/
+	      	},
+	        {
+		        sizeof(EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CHANNEL),  /*Length*/
+		        0x3,                                            		/*ResourceType*/
+		        0x0,                                            		/*ResourceSubType*/
+		        SIGNATURE_32('I','2','S','T'),                          /*UID*/
+		      	6														/*channel number*/
+	      	},
+	      	{
+		        sizeof(EFI_ACPI_5_0_CRST_RESOURCE_DESCRIPTOR_CHANNEL),  /*Length*/
+		        0x3,                                            		/*ResourceType*/
+		        0x0,                                            		/*ResourceSubType*/
+		        SIGNATURE_32('I','2','S','R'),                          /*UID*/
+		  		7														/*channel number*/   
+	      	},
+    	}
+  	},            
+};
+
+
+VOID*
+ReferenceAcpiTable (
+  VOID
+  )
+{
+  //
+  // Reference the table being generated to prevent the optimizer from removing the
+  // data structure from the exeutable
+  //
+  return (VOID*)&Csrt;
+}

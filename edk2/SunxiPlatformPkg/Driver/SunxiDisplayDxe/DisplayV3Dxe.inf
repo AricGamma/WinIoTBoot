@@ -1,0 +1,149 @@
+## @file
+#
+#  Component description file for GraphicsConsole module
+#
+#  This is the main routine for initializing the Graphics Console support routines.
+#
+#  Copyright (c) 2012, Samsung Electronics Co. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution. The full text of the license may be found at
+#  http://opensource.crg/licenses/bsd-license.php
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = DisplayDxe
+  FILE_GUID                      = c5deae31-fad2-4030-841b-cfc9644d2c5b
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = DisplayDxeInitialize
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 IPF EBC
+#
+#  DRIVER_BINDING                =  gGraphicsConsoleDriverBinding
+#  COMPONENT_NAME                =  gGraphicsConsoleComponentName
+#  COMPONENT_NAME2               =  gGraphicsConsoleComponentName2
+#
+
+[Sources]
+	DisplayV3Dxe.c
+	pwm/sunxi_pwm_sun50iw1p1.c																														
+	sunxi_display/de_v3.c
+	
+	sunxi_disp_clock/clk_factor.c
+	sunxi_disp_clock/clk_periph.c
+	sunxi_disp_clock/clk.c 
+	sunxi_disp_clock/clk_fixed_rate.c
+	sunxi_disp_clock/clk_sun50iw1.c
+	
+	sunxi_video_v3/disp/dev_disp.c 
+	sunxi_video_v3/disp/disp_sys_intf.c
+	sunxi_video_v3/disp/de/disp_display.c
+	sunxi_video_v3/disp/de/disp_features.c
+	sunxi_video_v3/disp/de/disp_device.c
+	sunxi_video_v3/disp/de/disp_lcd.c
+	sunxi_video_v3/disp/de/disp_manager.c
+	sunxi_video_v3/disp/de/disp_private.c
+	sunxi_video_v3/disp/de/disp_smart_backlight.c 
+	sunxi_video_v3/disp/de/disp_enhance.c 
+	sunxi_video_v3/disp/de/disp_capture.c 
+	sunxi_video_v3/disp/de/disp_hdmi.c 
+	sunxi_video_v3/disp/de/disp_tv.c 
+	sunxi_video_v3/disp/de/disp_vdevice.c
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_fcc.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_gsu.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_hal.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/disp_al.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_peak.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_rtmx.c
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_scaler_table.c	
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_vep_table.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_vsu.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_feat.c
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_lcd.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_lti.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_fce.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_ase.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_enhance.c
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_smbl.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_ccsc.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_dcsc.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_wb.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_dsi.c 
+	sunxi_video_v3/disp/de/lowlevel_sun50iw1/de_clock.c
+						
+	sunxi_video_v3/disp/lcd/panels.c 
+	sunxi_video_v3/disp/lcd/lcd_source.c 
+	sunxi_video_v3/disp/lcd/default_panel.c 
+	sunxi_video_v3/disp/lcd/lt070me05000.c 
+	sunxi_video_v3/disp/lcd/wtq05027d01.c 
+	sunxi_video_v3/disp/lcd/t27p06.c
+	sunxi_video_v3/disp/lcd/dx0960be40a1.c 
+	sunxi_video_v3/disp/lcd/tft720x1280.c 
+	sunxi_video_v3/disp/lcd/S6D7AA0X01.c
+	sunxi_video_v3/disp/lcd/inet_dsi_panel.c
+
+        sunxi_video_v3/hdmi/drv_hdmi.c
+        sunxi_video_v3/hdmi/hdmi_core.c
+        sunxi_video_v3/hdmi/hdmi_edid.c
+  
+[binaries.common]
+  
+    
+[BuildOptions]
+#*_ARMLINUXGCC_ARM_DLINK_FLAGS ==  /home/wangwei/seattle_uefi/firmware/edk2/SunxiPlatformPkg/Driver/SunxiDisplayDxe/sunxi_video_v2/libdsi /home/wangwei/seattle_uefi/firmware/edk2/SunxiPlatformPkg/Driver/SunxiDisplayDxe/sunxi_video_v2/libedp
+ 
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  UefiLib
+  MemoryAllocationLib
+  UefiDriverEntryPoint
+  IoLib
+  TimerLib
+  SysConfigLib
+  DmaLib
+  PrintLib
+  ArmLib
+  SunxiBootInfoLib
+#  SunxiDmaLib
+  HdmiLib
+# Sun50iW1P1HdmiLib
+
+	
+[Protocols]
+  gEfiGraphicsOutputProtocolGuid
+  gHardwareInterruptProtocolGuid
+  gAxpPowerProtocolGuid
+  
+[Guids]
+
+[Pcd]
+  gArmTokenSpaceGuid.PcdFdBaseAddress
+  gArmTokenSpaceGuid.PcdFdSize
+
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
+  gArmTokenSpaceGuid.PcdSystemMemorySize
+  
+  gSunxiTokenSpaceGuid.PcdFrameBufferBase
+  gSunxiTokenSpaceGuid.PcdFrameBufferSize
+  
+[Depex]
+  gHardwareInterruptProtocolGuid
+ 

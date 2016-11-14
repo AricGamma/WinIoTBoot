@@ -1,0 +1,70 @@
+/** @file
+*  BGRT Table
+*
+*  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+*  http://www.allwinnertech.com
+*
+*  tangmanliang <tangmanliang@allwinnertech.com>
+*
+*  This program and the accompanying materials
+*  are licensed and made available under the terms and conditions of the BSD License
+*  which accompanies this distribution.  The full text of the license may be found at
+*  http://opensource.org/licenses/bsd-license.php
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+*
+**/
+
+#include "ArmPlatform.h"
+
+
+/* IMAGE ADDRESS (UINT64) - Set to zero as it is dynamically allocated by firmware. */
+#define BGRT_IMAGE_ADDRESS   0x0
+
+/* BGRT image is horizontally centered and vertically 38.2% from the top. Image dimensions are dynamically calculated relative to panel resolution by firmware. */
+/* IMAGE OFFSET X - UINT32 */
+#define BGRT_IMAGE_OFFSET_X  0x0
+
+/* IMAGE OFFSET Y - UINT32 */
+#define BGRT_IMAGE_OFFSET_Y  0x0
+
+#pragma pack(1)
+
+/* ACPI 5.0 BGRT Table */
+EFI_ACPI_5_0_BOOT_GRAPHICS_RESOURCE_TABLE BGRT =
+{
+    /* ACPI BGRT Header */
+    {
+      EFI_ACPI_5_0_BOOT_GRAPHICS_RESOURCE_TABLE_SIGNATURE,   //Signature
+      sizeof (EFI_ACPI_5_0_BOOT_GRAPHICS_RESOURCE_TABLE),    //Length
+      EFI_ACPI_5_0_BOOT_GRAPHICS_RESOURCE_TABLE_REVISION,    //Revision
+      0,                                                     //Checksum
+      EFI_ACPI_OEM_ID,                                           //OEMID
+      EFI_ACPI_OEM_TABLE_ID,                                     //OEMTableID
+      EFI_ACPI_OEM_REVISION,                                     //OEMRevision
+      EFI_ACPI_CREATOR_ID,                                       //CreatorID
+      EFI_ACPI_CREATOR_REVISION                                  //CreatorRevision
+    },
+    EFI_ACPI_5_0_BGRT_VERSION,                               //Version
+    EFI_ACPI_5_0_BGRT_STATUS_INVALID,                        //Validity of Image, bit 0 = 0 (Invalid image WP Default)
+    EFI_ACPI_5_0_BGRT_IMAGE_TYPE_BMP,                        //Image Type is Bit-Map i.e 0x00
+    BGRT_IMAGE_ADDRESS,
+    BGRT_IMAGE_OFFSET_X,
+    BGRT_IMAGE_OFFSET_Y
+};
+
+#pragma pack()
+
+VOID*
+ReferenceAcpiTable (
+  VOID
+  )
+{
+  //
+  // Reference the table being generated to prevent the optimizer from removing the
+  // data structure from the exeutable
+  //
+  return (VOID*)&BGRT;
+}
+

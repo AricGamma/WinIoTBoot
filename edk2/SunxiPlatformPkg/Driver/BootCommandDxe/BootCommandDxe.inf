@@ -1,0 +1,69 @@
+#/** @file
+#  
+#  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+#  http://www.allwinnertech.com
+#
+#  wangwei <wangwei@allwinnertech.com>
+#  
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#  
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = BootCmmandDxe
+  FILE_GUID                      = BE71BA63-A9F8-C706-9F82-7BEEEDE06697
+  MODULE_TYPE                    = DXE_RUNTIME_DRIVER
+  VERSION_STRING                 = 1.0
+
+  ENTRY_POINT                    = BootCmmandDxeInitialize
+
+
+[Sources.common]
+  BootCommandDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  ArmPkg/ArmPkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+ 
+
+
+[LibraryClasses]
+  BaseLib
+  UefiLib
+  UefiBootServicesTableLib
+  DebugLib
+  PrintLib
+  UefiDriverEntryPoint 
+  SunxiPartitionLib
+  HobLib
+  SunxiBootInfoLib
+  SysConfigLib
+  TimerLib
+  ArmLib
+  SunxiKeyLib
+  SunxiCommonLib
+
+[Guids]
+  gSunxiVariableGuid
+
+[Protocols]
+  gSunxiFlashIoProtocolGuid
+  gAxpPowerProtocolGuid
+  gEfiSimpleTextInProtocolGuid
+
+
+[FixedPcd.common]
+
+
+[depex]
+  gAxpPowerProtocolGuid

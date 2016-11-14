@@ -1,0 +1,79 @@
+#/** @file
+#  
+#  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+#  http://www.allwinnertech.com
+#
+#  Martin.Zheng <martinzheng@allwinnertech.com>
+#  
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#  
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = NandDxe
+  FILE_GUID                      = 30997D96-BB98-53BE-043D-7BC3720CC249
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+
+  ENTRY_POINT                    = SunxiNandDxeInitialize
+
+[Sources.common]
+  NandDxe.c
+  NandBaseFun.c
+  NandOpFun.c
+  NandExt.c
+  NandFlashIo.c
+  NandFsIo.c
+
+[Packages]
+  ArmPlatformPkg/ArmPlatformPkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  MdePkg/MdePkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+  SunxiPlatformPkg/Sun9iW1Pkg/Sun9iW1Pkg.dec
+  ArmPkg/ArmPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  UefiLib
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  DxeServicesTableLib
+  BaseMemoryLib
+  CacheMaintenanceLib
+  ArmLib
+  IoLib
+  TimerLib
+  DmaLib
+  DebugLib
+  PrintLib
+  ArmPlatformLib
+  SysConfigLib
+  NandLib
+  SunxiCheckLib
+  SunxiBootInfoLib
+  SunxiPartitionLib
+
+[Guids]
+	gNandDevicePathGuid
+	gSunxiFsDevicePathGuid
+	
+[Protocols]
+  gEfiCpuArchProtocolGuid
+  gEfiDevicePathProtocolGuid
+  gEfiBlockIoProtocolGuid
+  gSunxiFlashIoProtocolGuid
+
+  
+[Pcd]
+  gArmTokenSpaceGuid.PcdFdBaseAddress
+  
+[Depex]
+  TRUE

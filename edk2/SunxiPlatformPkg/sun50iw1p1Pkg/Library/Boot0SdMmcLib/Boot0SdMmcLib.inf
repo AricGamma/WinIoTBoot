@@ -1,0 +1,48 @@
+/** @file
+*
+*  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+*  http://www.allwinnertech.com
+*
+*  tangmanliang <tangmanliang@allwinnertech.com>
+*
+*  This program and the accompanying materials
+*  are licensed and made available under the terms and conditions of the BSD License
+*  which accompanies this distribution.  The full text of the license may be found at
+*  http://opensource.org/licenses/bsd-license.php
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+*
+**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Boot0SdMmcLib
+  FILE_GUID                      = 0258BBAC-2E56-4AB2-91D4-F3B3260738FA
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = Boot0SdMmcLib
+
+
+#
+#  VALID_ARCHITECTURES           = ARM IA32 X64 IPF EBC
+#
+
+[Sources.common]
+  mmc_bsp.c
+  mmc.c
+[LibraryClasses]
+  SunxiSpl
+
+[Packages]
+  ArmPkg/ArmPkg.dec
+  MdePkg/MdePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+  SunxiPlatformPkg/sun50iw1p1Pkg/sun50iw1p1Pkg.dec
+  
+[FixedPcd]
+ gArmTokenSpaceGuid.PcdFdBaseAddress
+
+
+ 

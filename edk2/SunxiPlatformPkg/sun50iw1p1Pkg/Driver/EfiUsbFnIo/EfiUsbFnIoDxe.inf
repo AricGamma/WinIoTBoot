@@ -1,0 +1,69 @@
+#  Component description file for PlatformAcpiTables module.
+#
+#  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+#  http://www.allwinnertech.com
+#
+#  Martin.Zheng <martinzheng@allwinnertech.com>
+#  
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#  
+##
+
+
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Sun50iW1P1EfiUsbFnIoDxe
+  FILE_GUID                      = 1379ADFE-70AD-4540-BF69-662B0C0ED0F5
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+
+  ENTRY_POINT                    = EfiUsbFnIoDxeInitialize
+
+[Sources.common]
+ EfiUsbFnIoDxe.c
+ usb_base_sun50iw1p1.c
+ usb_dma_control.c
+ usbc.c
+ usbc_dev.c
+ usbc_resource.c
+ usbc_dma.c
+ 
+ 
+[Packages]
+  MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+  SunxiPlatformPkg/sun50iw1p1Pkg/sun50iw1p1Pkg.dec
+
+[LibraryClasses]
+  PcdLib
+  UefiLib
+  BaseLib
+  UefiDriverEntryPoint
+  MemoryAllocationLib
+  UncachedMemoryAllocationLib
+  CacheMaintenanceLib
+  IoLib
+  TimerLib
+  SunxiQueueLib
+  
+[Guids]
+  
+[Protocols]
+  gEfiUsbFnIoProtocolGuid
+  gHardwareInterruptProtocolGuid
+  gEfiCpuArchProtocolGuid
+  
+[FixedPcd]
+	gArmTokenSpaceGuid.PcdSystemMemoryBase
+	
+[depex]
+  TRUE

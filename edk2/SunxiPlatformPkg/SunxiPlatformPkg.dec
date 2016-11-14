@@ -1,0 +1,107 @@
+#/** @file
+# Beagle board package.
+#
+# Copyright (c) 2009, Apple Inc. All rights reserved.<BR>
+#
+#    This program and the accompanying materials are licensed and made available under
+#    the terms and conditions of the BSD License which accompanies this distribution.
+#    The full text of the license may be found at
+#    http://opensource.org/licenses/bsd-license.php
+#
+#    THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#**/
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = SunxiPlatformPkg
+  PACKAGE_GUID                   = 6eba6648-d853-4eb3-9761-528b82d5ab04
+  PACKAGE_VERSION                = 0.1
+
+################################################################################
+#
+# Include Section - list of Include Paths that are provided by this package.
+#                   Comments are used for Keywords and Module Types.
+#
+# Supported Module Types:
+#  BASE SEC PEI_CORE PEIM DXE_CORE DXE_DRIVER DXE_RUNTIME_DRIVER DXE_SMM_DRIVER DXE_SAL_DRIVER UEFI_DRIVER UEFI_APPLICATION
+#
+################################################################################
+[Includes.common]
+  Include                        # Root include for the package
+
+[Guids.common]
+  gSunxiTokenSpaceGuid       =  { 0x6834fe45, 0x4aee, 0x4fc6, { 0xbc, 0xb5, 0xff, 0x45, 0xb7, 0xa8, 0x71, 0xe2 } }
+
+	gSunxiScriptParseHobGuid   =  { 0x5f5f3e33, 0xeb9c, 0x475d, { 0xb0, 0x67, 0x87, 0xe6, 0xd5, 0x2a, 0x95, 0x45 } }
+
+  gSunxiScriptParseGuid      =  { 0x4f2b0907, 0x137b, 0x45d3, { 0x98, 0x74, 0x90, 0x9c, 0x23, 0x3e, 0x82, 0xab } }
+  
+  #
+  #SD/MMC device path GUID for sunxi.
+  #
+  
+  # {76B35BB5-02EB-47CF-BA85-79EFAC1B610F}
+  gSdMmc0DevicePathGuid                               = { 0x76b35bb5, 0x2eb, 0x47cf, { 0xba, 0x85, 0x79, 0xef, 0xac, 0x1b, 0x61, 0xf } }
+  
+  #{AB2DB36F-9E3B-4A4C-9ECC-676AE55FA0EF}
+  gSdMmc1DevicePathGuid                               = { 0xab2db36f, 0x9e3b, 0x4a4c, { 0x9e, 0xcc, 0x67, 0x6a, 0xe5, 0x5f, 0xa0, 0xef } }
+
+  #{B94253B2-B71E-4E8F-93C7-CAC212021C53}
+  gSdMmc2DevicePathGuid							      = { 0xb94253b2, 0xb71e, 0x4e8f, { 0x93, 0xc7, 0xca, 0xc2, 0x12, 0x2, 0x1c, 0x53 } }
+
+  #{D503E555-4B2D-4ECB-B0EF-CADAA7D792C7}
+  gSdMmc3DevicePathGuid 						      = { 0xd503e555, 0x4b2d, 0x4ecb, { 0xb0, 0xef, 0xca, 0xda, 0xa7, 0xd7, 0x92, 0xc7 } }
+
+  #{3786D853-22E4-DFD9-9C20-494EA8FFDEB2}
+  gNandDevicePathGuid                                 = { 0x3786D853, 0x22E4, 0xDFD9, { 0x9C, 0x20, 0x49, 0x4E, 0xA8, 0xff, 0xDE, 0xB2 } }
+  
+  #{8FBC880F-7A36-20F3-B45B-4D4FA5188223}
+  gSunxiFsDevicePathGuid                              = { 0x8FBC880F, 0x7A36, 0x20F3, { 0xB4, 0xB5, 0x4D, 0x4F, 0xA5, 0x18, 0x82, 0x23} }
+
+  #{646C7865-722E-CAF8-FA3D-04BDA9AEAA78}
+  gSunxiVariableGuid 	                              = { 0x646c7865, 0x722e, 0xcaf8, { 0xfa, 0x3d, 0x04, 0xbd, 0xa9, 0xae, 0xaa, 0x78 } }
+
+  #{76BECAC8-6A8B-5CBA-4C1F-F0EFE1EA1BFF}
+  gSunxiBootInfoHobGuid                               = { 0x76BECAC8, 0x6A8B, 0x5CBA, { 0x4c, 0x1f, 0xf0, 0xef, 0xe1, 0xea, 0x1b, 0xff } }
+   
+   
+[PcdsFeatureFlag.common]
+
+[PcdsFixedAtBuild.common]
+
+  gSunxiTokenSpaceGuid.PcdSunxiGpmcOffset|0x00000000|UINT32|0x00000203
+  gSunxiTokenSpaceGuid.PcdSunxiMMCHS1Base|0x00000000|UINT32|0x00000204
+  gSunxiTokenSpaceGuid.PcdSunxiArchTimer|3|UINT32|0x00000205
+  gSunxiTokenSpaceGuid.PcdSunxiFreeTimer|4|UINT32|0x00000206
+  gSunxiTokenSpaceGuid.PcdSunxiDebugAgentTimer|5|UINT32|0x00000207
+  gSunxiTokenSpaceGuid.PcdDebugAgentTimerFreqNanoSeconds|77|UINT32|0x00000208
+  gSunxiTokenSpaceGuid.PcdMmchsTimerFreq100NanoSeconds|1000000|UINT32|0x00000209
+  gSunxiTokenSpaceGuid.PcdFrameBufferBase|0|UINT64|0x00000210
+  gSunxiTokenSpaceGuid.PcdFrameBufferSize|0|UINT64|0x00000211
+  gSunxiTokenSpaceGuid.PcdMpParkSharedBase|0|UINT64|0x00000212
+  gSunxiTokenSpaceGuid.PcdMpParkSharedSize|0|UINT64|0x00000213
+  gSunxiTokenSpaceGuid.PcdGpioBase|0x01c20800|UINT32|0x00000214
+  gSunxiTokenSpaceGuid.PcdRtcBase|0x01f00000|UINT32|0x00000215
+  gSunxiTokenSpaceGuid.PcdScriptEarlyBase|0x43000000|UINT32|0x00000216
+  gSunxiTokenSpaceGuid.PcdCpusGpioBase|0x01F02C00|UINT32|0x00000217
+  gSunxiTokenSpaceGuid.PcdKernelImageOffset|0x00007800|UINT64|0x00000218
+  gSunxiTokenSpaceGuid.PcdKernelScriptOffset|0x03000000|UINT64|0x00000219
+
+
+[Protocols.common]
+
+  gSunxiPlatformScriptParseProtocolGuid = { 0x77f0097a, 0xc003, 0x49e0, { 0x81, 0x37, 0x31, 0x56, 0xf4, 0x46, 0xb0, 0xda } }
+  gAxpPowerProtocolGuid 							  = { 0x3717f2c,  0x9f1d, 0x4be5, { 0x8d, 0xb5, 0xf4, 0x25, 0x79, 0x1,  0xe5, 0x70 } }
+  gSunxiDmaProtocolGuid 							  = { 0xc5816b8d, 0x4a2e, 0x4adb, { 0xa8, 0xa4, 0xd8, 0x0,  0xbf, 0x7,  0x9e, 0x80 } }
+  gSunxiFlashIoProtocolGuid						  = { 0x1984c6f2, 0x4a91, 0x4aa9, { 0x97, 0xdc, 0xf5, 0x2e, 0xef, 0xb0, 0x13, 0x70 } }
+  gEfiUsbFnIoProtocolGuid				      	= { 0x32d2963a, 0xfe5d, 0x4f30, { 0xb6, 0x33, 0x6e, 0x5d, 0xc5, 0x58, 0x3,  0xcc } }
+  gEfiSimpleWinPhoneIoProtocolGuid      = { 0xbde900dd, 0x190a, 0x4c7d, { 0x96, 0x63, 0x16, 0xba, 0x8e, 0xd8, 0x8b, 0x55 } }
+  gEfiCheckSigProtocolGuid              = { 0xe52500c3, 0x4bf4, 0x41a5, { 0x96, 0x92, 0x6d, 0xf7, 0x3d, 0xbf, 0xb9, 0xfe } }
+
+
+
+
+
+

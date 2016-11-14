@@ -1,0 +1,73 @@
+#/** @file
+#  
+#  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+#  http://www.allwinnertech.com
+#
+#  Martin.Zheng <martinzheng@allwinnertech.com>
+#  
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#  
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Sun50iW1P1Lib
+  FILE_GUID                      = 736343a0-1d96-11e0-aaaa-0002a5d5c51b
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = ArmPlatformLib
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+  SunxiPlatformPkg/sun50iw1p1Pkg/sun50iw1p1Pkg.dec
+[LibraryClasses]
+  IoLib
+  ArmLib
+  TimerLib
+  MemoryAllocationLib
+  SmBusLib
+  AxpPowerLib
+  SunxiSmcLib
+  CacheMaintenanceLib
+  SunxiBootInfoLib
+
+[Sources.common]
+  Sun50iW1P1Helper.asm   | RVCT
+  Sun50iW1P1Helper.S     | GCC
+  Sun50iW1P1.c
+  Sun50iW1P1Mem.c
+  Sun50iW1P1Clock.c
+  Arisc.c
+
+[FeaturePcd]
+  gEmbeddedTokenSpaceGuid.PcdCacheEnable
+
+[FixedPcd]
+  gArmTokenSpaceGuid.PcdFdBaseAddress
+  gArmTokenSpaceGuid.PcdFdSize
+
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
+  gArmTokenSpaceGuid.PcdSystemMemorySize
+  
+  gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz
+  
+  gArmTokenSpaceGuid.PcdArmPrimaryCoreMask
+  gArmTokenSpaceGuid.PcdArmPrimaryCore
+  
+  gSunxiTokenSpaceGuid.PcdFrameBufferBase
+  gSunxiTokenSpaceGuid.PcdFrameBufferSize
+  
+  gSunxiTokenSpaceGuid.PcdMpParkSharedBase
+  gSunxiTokenSpaceGuid.PcdMpParkSharedSize
+  

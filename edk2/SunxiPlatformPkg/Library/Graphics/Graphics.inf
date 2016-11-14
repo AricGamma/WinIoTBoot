@@ -1,0 +1,48 @@
+#/*++
+#
+# Copyright (c) 2004, Intel Corporation. All rights reserved.<BR>
+# This program and the accompanying materials                          
+# are licensed and made available under the terms and conditions of the BSD License         
+# which accompanies this distribution.  The full text of the license may be found at        
+# http://opensource.org/licenses/bsd-license.php                                            
+#                                                                                           
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+# 
+#  Module Name:
+#
+#    Graphics.inf
+#
+#  Abstract:
+#
+#    Component description file.
+#
+#--*/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Graphics
+  FILE_GUID                      = 8FBC880F-7A36-20F3-B45B-4D4FA5188223
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = Graphics
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+  
+[sources.common]
+  Graphics.c
+
+[LibraryClasses]
+  SunxiFileLib
+[Guids]
+  gEfiFileSystemInfoGuid
+  gEfiFileInfoGuid
+
+[Protocols]
+  gEfiGraphicsOutputProtocolGuid
+
+[Depex]
+  TRUE

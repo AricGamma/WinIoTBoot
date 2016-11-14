@@ -1,0 +1,52 @@
+/** @file
+*
+*  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+*  http://www.allwinnertech.com
+*
+*  tangmanliang <tangmanliang@allwinnertech.com>
+*  
+*  This program and the accompanying materials                          
+*  are licensed and made available under the terms and conditions of the BSD License         
+*  which accompanies this distribution.  The full text of the license may be found at        
+*  http://opensource.org/licenses/bsd-license.php                                            
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+*
+**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Fes
+  FILE_GUID                      = C43F46E2-5C3C-496A-80F9-20924D09A4A4
+  MODULE_TYPE                    = SEC
+  VERSION_STRING                 = 1.0
+
+[Sources.common]
+  fes1_main.c
+  main/fes1_entry.S
+  
+[Packages]
+  EmbeddedPkg/EmbeddedPkg.dec
+  MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+
+[LibraryClasses]
+  SunxiSpl
+  SplLib
+#  Sun50iW1P1DramLib
+  DramLib
+
+[BuildOptions]
+
+[Guids]
+	
+[Protocols]
+  
+[Pcd]
+ gArmTokenSpaceGuid.PcdFdBaseAddress
+  
+[Depex]
+  TRUE

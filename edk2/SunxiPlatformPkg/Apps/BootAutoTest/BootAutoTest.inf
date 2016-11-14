@@ -1,0 +1,65 @@
+#/** @file
+#  
+#  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+#  http://www.allwinnertech.com
+#
+#  Martin.Zheng <martinzheng@allwinnertech.com>
+#  
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#  
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = BootAutoTest
+  FILE_GUID                      = 045A54DA-4949-44A6-37B8-AEA2A3287313
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = EfexMain
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = ARM
+#
+
+[Sources]
+  BootAutoTest.c
+  EfexBufferQueue.c
+  
+[Packages]
+  ArmPkg/ArmPkg.dec
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+  
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+  PcdLib
+  MemoryAllocationLib
+  DebugLib
+  SysConfigLib
+  SunxiPartitionLib
+  SunxiBootInfoLib
+  SunxSpriteHelperLib
+  SunxiCommonLib
+  SunxiFileLib
+  SunxiCheckLib
+  
+[Protocols]
+    gEfiUsbFnIoProtocolGuid
+    gEfiSimpleTextOutProtocolGuid
+    gEfiSimpleTextInProtocolGuid
+    gSunxiFlashIoProtocolGuid   
+    gAxpPowerProtocolGuid
+    gEfiLoadedImageProtocolGuid
+    
+[Pcd]
+  gArmTokenSpaceGuid.PcdFdBaseAddress

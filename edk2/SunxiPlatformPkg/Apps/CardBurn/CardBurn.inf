@@ -1,0 +1,78 @@
+#/** @file
+#  
+#  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+#  http://www.allwinnertech.com
+#
+#  wangwei <wangwei@allwinnertech.com>
+#  
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#  
+#**/
+
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = CardBurn
+  FILE_GUID                      = B44F2B7D-17B5-1208-30B6-0260434602BF
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+
+  ENTRY_POINT                    = CardBurnMain
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 IPF EBC
+#
+
+[Sources]
+  CardBurn.c
+  SunxiSprite.c
+  sprite_verify.c
+  sparse/sparse.c
+  firmware/imgdecode.c
+  sprite_cartoon.c
+  sprite_erase.c
+  sprite_recovery.c
+  sprite_card.c
+  sprite_main.c
+
+
+[Packages]
+  ArmPkg/ArmPkg.dec
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  MemoryAllocationLib
+  BaseMemoryLib
+  UefiLib
+  SunxiCheckLib
+  SysConfigLib
+  SunxiPartitionLib
+  TimerLib
+  SunxiBootInfoLib
+  SunxSpriteHelperLib
+  
+  
+
+[Guids]
+
+[Protocols]
+  gEfiBlockIoProtocolGuid
+  gSunxiFlashIoProtocolGuid
+  gEfiLoadedImageProtocolGuid
+  
+[Pcd]
+  gArmTokenSpaceGuid.PcdFdBaseAddress
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
+  

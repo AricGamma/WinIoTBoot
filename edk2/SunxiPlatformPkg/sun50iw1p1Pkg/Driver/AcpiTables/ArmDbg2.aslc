@@ -1,0 +1,237 @@
+/** @file
+*
+*  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+*  http://www.allwinnertech.com
+*
+*  Martin.Zheng <martinzheng@allwinnertech.com>
+*  
+*  This program and the accompanying materials                          
+*  are licensed and made available under the terms and conditions of the BSD License         
+*  which accompanies this distribution.  The full text of the license may be found at        
+*  http://opensource.org/licenses/bsd-license.php                                            
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+*
+**/
+
+#include "ArmPlatform.h"
+
+#define MAX_OEM_WRITE_ENTRIES                   8
+
+#define DEBUG_DEVICE_PORT_TYPE_SERIAL           0x8000
+#define DEBUG_DEVICE_PORT_TYPE_USB              0x8002
+#define DEBUG_DEVICE_PORT_TYPE_NET              0x8003
+
+#define DEBUG_DEVICE_PORT_SUBTYPE_SERIAL_16550  0x0006
+
+#define DEBUG_DEVICE_PORT_SUBTYPE_NET_AWCH      0x000B
+
+#define DEBUG_DEVICE_OEM_PORT_USBFN             0x0001
+#define DEBUG_DEVICE_OEM_PORT_USBFN_BUFFERED    0x0006
+
+#define NUMBER_OF_DBG_DEVICES                   2
+#define MAX_NAME_SPACE_STRING_LENGTH            32
+
+
+// ACPI structure declarations.
+
+#pragma pack(1)
+
+typedef struct {
+  UINT8                             Revision;
+  UINT16                            Length;
+  UINT8                             BaseAddressRegisterCount;
+  UINT16                            NameSpaceStringLength;
+  UINT16                            NameSpaceStringOffset;
+  UINT16                            OemDataLength;
+  UINT16                            OemDataOffset;
+  UINT16                            PortType;
+  UINT16                            PortSubtype;
+  UINT16                            Reserved;
+  UINT16                            BaseAddressRegisterOffset;
+  UINT16                            AddressSizeOffset;
+} ACPI_DEBUG_DEVICE_INFORMATION_V2;
+
+typedef struct {
+  EFI_ACPI_DESCRIPTION_HEADER       Header;
+  UINT32                            OffsetDbgDeviceInfo;
+  UINT32                            NumberDbgDeviceInfo;
+} ACPI_DEBUG_PORT_TABLE_V2;
+
+//OEM struct supported by KDNET
+typedef struct {
+  UINT16                    PortType;
+  UINT16                    Reserved;
+  UINT32                    Signature;
+  UINT32                    WriteCount;
+  struct {
+    UINT8                  BaseAddressRegister;
+    UINT8                  Width;
+    UINT16                 Offset;
+    UINT32                 AndValue;
+    UINT32                 OrValue;
+  } Data[MAX_OEM_WRITE_ENTRIES];
+} ACPI_DEBUG_DEVICE_OEM_DATA;
+
+typedef struct {
+  ACPI_DEBUG_DEVICE_INFORMATION_V2 DebugDeviceInformation;
+
+  // not part of the actual structure
+  EFI_ACPI_5_0_GENERIC_ADDRESS_STRUCTURE     BaseAddressRegister;
+  UINT32                            AddressSize;
+  UINT8                             NameSpaceString[MAX_NAME_SPACE_STRING_LENGTH];
+} ACPI_DEBUG_DEVICE_INFORMATION_V2_KDCOM;
+
+typedef struct {
+  ACPI_DEBUG_DEVICE_INFORMATION_V2 DebugDeviceInformation;
+
+  // not part of the actual structure
+  EFI_ACPI_5_0_GENERIC_ADDRESS_STRUCTURE     BaseAddressRegister[2];
+  UINT32                            AddressSize[2];
+  UINT8                             NameSpaceString[MAX_NAME_SPACE_STRING_LENGTH];
+  ACPI_DEBUG_DEVICE_OEM_DATA        OemData;
+} ACPI_DEBUG_DEVICE_INFORMATION_V2_KDNET;
+
+
+typedef struct {
+  ACPI_DEBUG_PORT_TABLE_V2 DebugPortTable;
+
+  // not part of the actuall structure
+  ACPI_DEBUG_DEVICE_INFORMATION_V2_KDCOM   KDCOM;   //KDCOM
+  ACPI_DEBUG_DEVICE_INFORMATION_V2_KDNET   KDNET;   //KDNET
+} ACPI_DEBUG_PORT_TABLE_V2_AWCH;
+
+#pragma pack()
+
+
+// Fixed field values.
+
+#define ACPI_DDI_V2_REVISION                        1
+#define ACPI_DDI_V2_LENGTH                          sizeof(ACPI_DEBUG_DEVICE_INFORMATION_V2_KDCOM)
+#define ACPI_DDI_V2_1_OEM_LENGTH                    sizeof(ACPI_DEBUG_DEVICE_INFORMATION_V2_KDNET)
+
+#define ACPI_DDI_V2_BASE_ADDRESS_REGISTER_OFFSET    sizeof(ACPI_DEBUG_DEVICE_INFORMATION_V2)
+
+// Structure has only one ACPI_GAS for register (1 base address register)
+#define ACPI_DDI_V2_1_ADDRESS_SIZE_OFFSET           ACPI_DDI_V2_BASE_ADDRESS_REGISTER_OFFSET + 2 * sizeof(EFI_ACPI_5_0_GENERIC_ADDRESS_STRUCTURE)
+#define ACPI_DDI_V2_1_NAMESPACE_STRING_OFFSET       ACPI_DDI_V2_1_ADDRESS_SIZE_OFFSET + 2 * sizeof(UINT32)
+#define ACPI_DDI_V2_1_OEM_DATA_OFFSET               ACPI_DDI_V2_1_NAMESPACE_STRING_OFFSET + MAX_NAME_SPACE_STRING_LENGTH
+
+#define ACPI_DPT_V2_LENGTH                          sizeof(ACPI_DEBUG_PORT_TABLE_V2_AWCH)
+#define ACPI_DPT_V2_REVISION                        1
+
+
+// Device namespace strings. (May not be longer than MAX_NAME_SPACE_STRING_LENGTH characters & may not point to same device.)
+
+#define UART_DEVICE_NAME_SPACE_STRING               "\\_SB.UAR0"
+#define USB_HS_DEVICE_NAME_SPACE_STRING             "\\_SB.URS0"
+
+
+// ACPI table definition.
+
+ACPI_DEBUG_PORT_TABLE_V2_AWCH DBG2 =
+  {
+    {
+      {
+        ACPI_DBG2_SIGNATURE,                                // Signature
+        ACPI_DPT_V2_LENGTH,                                 // Length
+        ACPI_DPT_V2_REVISION,                               // Revision
+        0,                                                  // Checksum
+        EFI_ACPI_OEM_ID,                                        // OEMID[ACPI_MAX_OEM_ID]
+        EFI_ACPI_OEM_TABLE_ID,                                  // OEMTableID[ACPI_MAX_TABLE_ID]
+        EFI_ACPI_OEM_REVISION,                                  // OEMRevision
+        EFI_ACPI_CREATOR_ID,                                    // CreatorID[ACPI_MAX_CREATOR_ID]
+        EFI_ACPI_CREATOR_REVISION                               // CreatorRev
+      },
+
+      sizeof(ACPI_DEBUG_PORT_TABLE_V2),
+      NUMBER_OF_DBG_DEVICES
+    },
+
+    //
+    // Debug device table.
+    //
+
+    // Device UART
+    {
+      {
+        ACPI_DDI_V2_REVISION,                               // Revision
+        ACPI_DDI_V2_LENGTH,                                 // Length
+        1,                                                  // BaseAddressRegisterCount
+        sizeof(UART_DEVICE_NAME_SPACE_STRING),              // NameSpaceStringLength
+        ACPI_DDI_V2_1_NAMESPACE_STRING_OFFSET,              // NameSpaceStringOffset
+        0,                                                  // OemDataLength
+        0,                                                  // OemDataOffset
+        DEBUG_DEVICE_PORT_TYPE_SERIAL,                      // PortType
+        DEBUG_DEVICE_PORT_SUBTYPE_SERIAL_16550,             // PortSubtype
+        0,                                                  // Reserved
+        ACPI_DDI_V2_BASE_ADDRESS_REGISTER_OFFSET,           // BaseAddressRegisterOffset
+        ACPI_DDI_V2_1_ADDRESS_SIZE_OFFSET                   // AddressSizeOffset
+      },
+
+      { ACPI_GAS_ID_SYSTEM_MEMORY, 32, 0, 1, 0x01c28000 },  // BaseAddressRegister
+      0x00000020,                                             // AddressSize
+      UART_DEVICE_NAME_SPACE_STRING                         // NameSpaceString
+    },
+
+    //KDNET over USB
+    {
+      {
+        ACPI_DDI_V2_REVISION,                               // Revision
+        ACPI_DDI_V2_1_OEM_LENGTH,                           // Length
+        2,                                                  // BaseAddressRegisterCount
+        sizeof(USB_HS_DEVICE_NAME_SPACE_STRING),            // NameSpaceStringLength
+        ACPI_DDI_V2_1_NAMESPACE_STRING_OFFSET,              // NameSpaceStringOffset
+        sizeof(ACPI_DEBUG_DEVICE_OEM_DATA),                 // OemDataLength
+        ACPI_DDI_V2_1_OEM_DATA_OFFSET,                      // OemDataOffset
+        DEBUG_DEVICE_PORT_TYPE_NET,                         // PortType
+        DEBUG_DEVICE_PORT_SUBTYPE_NET_AWCH,                 // PortSubtype
+        0,                                                  // Reserved
+        ACPI_DDI_V2_BASE_ADDRESS_REGISTER_OFFSET,           // BaseAddressRegisterOffset
+        ACPI_DDI_V2_1_ADDRESS_SIZE_OFFSET                   // AddressSizeOffset
+      },
+
+      {
+				{ ACPI_GAS_ID_SYSTEM_MEMORY, 32, 0, 32, 0x01c19000 }, // BaseAddressRegister for OTG controller
+				{ ACPI_GAS_ID_SYSTEM_MEMORY, 32, 0, 32, 0x01c28000 }  // BaseAddressRegister for uart0
+      },
+
+      {
+        0x00001000,                                           // AddressSize for OTG controller
+        0x00000400                                            // AddressSize for uart0
+      },
+      USB_HS_DEVICE_NAME_SPACE_STRING,                      // NameSpaceString
+      {                                                     // OEM Data
+        DEBUG_DEVICE_OEM_PORT_USBFN_BUFFERED,               // Controller type
+        0,
+        SIGNATURE_32('F','I','X','1'),
+        1,                                                  // Number of writes
+        {
+          {
+            0, 
+            0,
+            0x0090,
+            0x00000000, 
+            0x00000000
+          }
+
+        }
+      }   //end OEM data
+    }
+
+  };
+
+
+VOID*
+ReferenceAcpiTable (
+  VOID
+  )
+{
+  //
+  // Reference the table being generated to prevent the optimizer from removing the 
+  // data structure from the exeutable
+  //
+  return (VOID*)&DBG2;
+}
+ 

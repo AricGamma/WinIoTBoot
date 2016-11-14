@@ -1,0 +1,193 @@
+/** @file
+*
+*  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+*  http://www.allwinnertech.com
+*
+*  Martin.Zheng <martinzheng@allwinnertech.com>
+*  
+*  This program and the accompanying materials                          
+*  are licensed and made available under the terms and conditions of the BSD License         
+*  which accompanies this distribution.  The full text of the license may be found at        
+*  http://opensource.org/licenses/bsd-license.php                                            
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+*
+**/
+
+#include "ArmPlatform.h"
+//
+// MADT Definitions
+//
+#define EFI_ACPI_OEM_MADT_REVISION 0x00000001 // for source control
+
+//
+// GIC base address
+//
+#define EFI_ACPI_GIC_ADDRESS 0x01C82000 // gic cpuif base address
+#define GICD_BASE_ADDRESS    0x01C81000 //gic distributer(gicd) address 
+#define GICD_VECTOR_BASE     0x00000000 
+
+#define MP_PARK_MAILBOX_BASE 0x7EF80000
+#define CPUX_PARK_MAILBOX(X) ((MP_PARK_MAILBOX_BASE)+(X<<12))
+
+//
+// Define the number of each table type.
+// This is where the table layout is modified.
+//
+#define EFI_ACPI_PROCESSOR_GIC_COUNT      4  // 4 cores
+#define EFI_ACPI_GICD_COUNT               1 // Must be only one
+
+//
+// Ensure proper structure formats
+//
+#pragma pack (1)
+
+//
+// ACPI 1.0 MADT structure
+//
+typedef struct {
+  EFI_ACPI_1_0_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER   Header;
+
+#if EFI_ACPI_PROCESSOR_GIC_COUNT > 0
+  EFI_ACPI_5_0_GIC_STRUCTURE                  		Gic[EFI_ACPI_PROCESSOR_GIC_COUNT];
+#endif
+
+#if EFI_ACPI_GICD_COUNT > 0
+  EFI_ACPI_5_0_GIC_DISTRIBUTOR_STRUCTURE           GicD[EFI_ACPI_GICD_COUNT];
+#endif
+
+} EFI_ACPI_1_0_MULTIPLE_APIC_DESCRIPTION_TABLE;
+
+#pragma pack ()
+
+EFI_ACPI_1_0_MULTIPLE_APIC_DESCRIPTION_TABLE Madt = {
+ {
+  	{
+	  EFI_ACPI_1_0_APIC_SIGNATURE,
+	  sizeof (EFI_ACPI_1_0_MULTIPLE_APIC_DESCRIPTION_TABLE),
+	  EFI_ACPI_1_0_MULTIPLE_APIC_DESCRIPTION_TABLE_REVISION,
+
+	  //
+	  // Checksum will be updated at runtime
+	  //
+	  0x00,
+	  //
+	  // It is expected that these values will be programmed at runtime
+	  //
+	  EFI_ACPI_OEM_ID,
+	  
+	  EFI_ACPI_OEM_TABLE_ID,
+	  EFI_ACPI_OEM_MADT_REVISION,
+	  EFI_ACPI_CREATOR_ID,
+	  EFI_ACPI_CREATOR_REVISION
+    },
+    //
+    // MADT specific fields
+    //
+    EFI_ACPI_GIC_ADDRESS,
+    0,
+},
+
+  
+  //
+  // GIC Structures
+  //
+	  	
+{
+#if EFI_ACPI_PROCESSOR_GIC_COUNT >= 1
+   // 1st (Boot) Processor
+  {
+	  EFI_ACPI_5_0_GIC,                        		    // Type
+	  sizeof (EFI_ACPI_5_0_GIC_STRUCTURE),     		    // Length
+	  EFI_ACPI_RESERVED_BYTE,				    // reserved 2 bytes. Must be zero
+	  0x00,                                                     // GIC ID - MUST BE the ARM CPU Interface Number for this proc. Change if needed.
+	  0x00,                                                     // ACPI Processor ID - A unique number for this processor. It will be used in the DSDT, too
+	  0x00000001,                                               // Flags - Bit0 = 1 (Processor Enabled); BIT1 = 0 (Performance Interrupt is Level-triggered) Change if needed.
+	  0x00000001,							    //version of the arm processor packing protocol
+	  152, 							      	//The GSIV used for Performance Monitoring Interrupts
+	  CPUX_PARK_MAILBOX(0),							    //The 64-bit physical address of the processor¡¯s Parking Protocol mailbox
+	  EFI_ACPI_GIC_ADDRESS								//GIC Physical Base Address,don't provide it, we use the ADDRESS in MADT
+  },
+#endif
+
+#if EFI_ACPI_PROCESSOR_GIC_COUNT >= 2
+   // 2nd Processor
+  {
+	  EFI_ACPI_5_0_GIC,                        		    // Type
+	  sizeof (EFI_ACPI_5_0_GIC_STRUCTURE),     		    // Length
+	  EFI_ACPI_RESERVED_BYTE,				    // reserved 2 bytes. Must be zero
+	  0x01,                                                     // GIC ID - MUST BE the ARM CPU Interface Number for this proc. Change if needed.
+	  0x01,                                                     // ACPI Processor ID - A unique number for this processor. It will be used in the DSDT, too
+	  0x00000001,                                               // Flags - Bit0 = 1 (Processor Enabled); BIT1 = 0 (Performance Interrupt is Level-triggered) Change if needed.
+	  0x00000001,							    //version of the arm processor packing protocol
+	  153, 								//The GSIV used for Performance Monitoring Interrupts
+	  CPUX_PARK_MAILBOX(1),							    //The 64-bit physical address of the processor¡¯s Parking Protocol mailbox
+	  EFI_ACPI_GIC_ADDRESS								//GIC Physical Base Address,don't provide it, we use the ADDRESS in MADT
+  },
+#endif
+
+#if EFI_ACPI_PROCESSOR_GIC_COUNT >= 3
+  // 3rd Processor
+  {
+	  EFI_ACPI_5_0_GIC,                        		    // Type
+	  sizeof (EFI_ACPI_5_0_GIC_STRUCTURE),     		    // Length
+	  EFI_ACPI_RESERVED_BYTE,				    // reserved 2 bytes. Must be zero
+	  0x02,                                              // GIC ID - MUST BE the ARM CPU Interface Number for this proc. Change if needed.
+	  0x02,                                                     // ACPI Processor ID - A unique number for this processor. It will be used in the DSDT, too
+	  0x00000001,                                               // Flags - Bit0 = 1 (Processor Enabled); BIT1 = 0 (Performance Interrupt is Level-triggered) Change if needed.
+	  0x00000001,							    //version of the arm processor packing protocol
+	  154, 								//The GSIV used for Performance Monitoring Interrupts
+	  CPUX_PARK_MAILBOX(2),							    //The 64-bit physical address of the processor¡¯s Parking Protocol mailbox
+	  EFI_ACPI_GIC_ADDRESS,								//GIC Physical Base Address,don't provide it, we use the ADDRESS in MADT
+  },
+#endif
+
+#if EFI_ACPI_PROCESSOR_GIC_COUNT >= 4
+  // 4th Processor
+  {
+	  EFI_ACPI_5_0_GIC,                        		    // Type
+	  sizeof (EFI_ACPI_5_0_GIC_STRUCTURE),     		    // Length
+	  EFI_ACPI_RESERVED_BYTE,				    // reserved 2 bytes. Must be zero
+	  0x03,                                                     // GIC ID - MUST BE the ARM CPU Interface Number for this proc. Change if needed.
+	  0x03,                                                     // ACPI Processor ID - A unique number for this processor. It will be used in the DSDT, too
+	  0x00000001,                                               // Flags - Bit0 = 1 (Processor Enabled); BIT1 = 0 (Performance Interrupt is Level-triggered)  Change if needed.
+	  0x00000001,							    //version of the arm processor packing protocol
+	  155, 								//The GSIV used for Performance Monitoring Interrupts
+	  CPUX_PARK_MAILBOX(3),							    //The 64-bit physical address of the processor¡¯s Parking Protocol mailbox
+	  EFI_ACPI_GIC_ADDRESS,				//GIC Physical Base Address,don't provide it, we use the ADDRESS in MADT
+  },
+#endif
+
+},
+
+#if EFI_ACPI_GICD_COUNT > 0
+  //
+  // GICD Structure - Must come AFTER all of he GIC Structures
+  //
+
+  {
+	  EFI_ACPI_5_0_GICD,                                        // Type
+	  sizeof (EFI_ACPI_5_0_GIC_DISTRIBUTOR_STRUCTURE),          // Length
+	  EFI_ACPI_RESERVED_BYTE,				    // reserved 2 bytes. Must be zero
+
+	  0x00,                                    // GICD ID (Can be 0)
+	  GICD_BASE_ADDRESS,					    // Location in the Physical address map of the GICD's registers
+	  (UINT32)GICD_VECTOR_BASE,                // Lowest Interrupt Number for the GICD (Typically 0)
+	  EFI_ACPI_RESERVED_WORD
+  }
+#endif
+};
+
+
+VOID*
+ReferenceAcpiTable (
+  VOID
+  )
+{
+  //
+  // Reference the table being generated to prevent the optimizer from removing the 
+  // data structure from the exeutable
+  //
+  return (VOID*)&Madt;
+}

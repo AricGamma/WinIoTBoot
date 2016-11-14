@@ -1,0 +1,639 @@
+#!/bin/bash
+
+#set -e
+
+ROOT_DIR=$PWD
+TOOLS_DIR=${ROOT_DIR}/pctools/linux
+PACK_CHIP="sun8iw1p1"
+PACK_PLATFORM="windows"
+PACK_BOARD="evb"
+PACK_BOOT="nand"
+PACK_FUNC="android"
+PACK_DEBUG="uart0"
+
+export PATH=${TOOLS_DIR}/mod_update:${TOOLS_DIR}/eDragonEx:${TOOLS_DIR}/fsbuild200:${TOOLS_DIR}/android:$PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${TOOLS_DIR}/libs
+
+
+show_help()
+{
+printf "
+NAME
+    pack-new - The pack tools for linux firmware
+
+SYNOPSIS
+    pack [-h] [-c chip] [-p platform] [-b board] [-d debug]
+
+OPTIONS
+    -h                  Display help message
+    -c [chip_type]      Chip type, e.g. sun3i, sun4i, sun5i,...
+    -p [platform_type]  Platform type, e.g. linux, crane,...
+    -b [board_type]     Board type, e.g. evb1.1, evb1.2, ...
+    -B [boot_type]      Boot type, e.g. nand, sdcard, ...
+    -d [debug_mode]     Debug modes, e.g. uart0(default), card0
+
+All available chips, platfroms, boards are list below
+
+CHIP  PLATFORM   BOARD
+--------------------------------
+"
+
+for chipp in $(find chips/ -mindepth 1 -maxdepth 1 -type d )
+do
+    chip=`basename $chipp`
+    printf "$chip\n"
+
+    for platformp in $(find chips/$chip/configs/ -mindepth 1 -maxdepth 1 -type d)
+    do
+        platform=`basename $platformp`
+        printf "      $platform\n"
+
+        for boardp in $(find chips/$chip/configs/$platform/ -mindepth 1 -maxdepth 1 -type d)
+        do
+            board=`basename $boardp`
+            printf "                $board\n"
+        done
+    done
+
+done
+}
+
+while getopts hc:p:b:B:d:f: OPTION
+do
+    case $OPTION in
+    h) show_help
+    exit 0
+    ;;
+    c) PACK_CHIP=$OPTARG
+    ;;
+    b) PACK_BOARD=$OPTARG
+    ;;
+    p) PACK_PLATFORM=$OPTARG
+    ;;
+    B) PACK_BOOT=$OPTARG
+    ;;
+	d) PACK_DEBUG=$OPTARG 
+	;;
+	f) PACK_FUNC=$OPTARG
+	;;
+    *) show_help
+    exit 0
+    ;;
+esac
+done
+
+do_prepare()
+ {
+    if [ -z "$PACK_CHIP" -o -z "$PACK_BOARD" -o -z "$PACK_PLATFORM" -o  ! -d "chips/$PACK_CHIP/configs/$PACK_PLATFORM/$PACK_BOARD" ]; then
+        printf "Invalid Parameter\n"
+        show_help
+        exit 1
+    fi
+
+#FIXME: do some basic check
+
+    if [ -d out ]; then
+        rm -rf out/
+    fi
+    mkdir out/
+}
+
+do_clean()
+{
+    #rm -rf efex boot wboot
+    #rm -rf out/*.fex out/*.bin
+	printf "pack finish\n"
+}
+
+do_pack_linux()
+{
+	if [ "$PACK_FUNC" = "prvt" ]; then
+   		do_pack_prvt
+   	else
+		do_pack_linux0
+	fi
+}
+
+do_pack_android()
+{
+	if [ "$PACK_FUNC" = "prvt" ]; then
+   		do_pack_prvt
+   	else
+		do_pack_crane
+	fi
+}
+
+do_pack_crane()
+{
+    printf "!!!Packing for crane!!!\n"
+
+    if [ -z "$LICHEE_OUT" ]; then
+        LICHEE_OUT=`cd ../../out; pwd`
+    fi
+
+    if [ -z "$CRANE_IMAGE_OUT" ]; then
+        echo "please specify CRANE_IMAGE_OUT env"
+        exit 1
+    fi
+
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/default/* out/
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/$PACK_BOARD/*.fex out/ 2>/dev/null
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/$PACK_BOARD/*.cfg out/ 2>/dev/null
+
+    # modify the debug opt
+    if [ $PACK_CHIP = sun6i ]; then
+	if [ $PACK_DEBUG = card0 ]; then
+	    cp $TOOLS_DIR/awk_debug_card0 out/awk_debug_card0
+	    TX=`awk  '$0~"'$PACK_CHIP'"{print $2}' pctools/linux/card_debug_pin`
+	    RX=`awk  '$0~"'$PACK_CHIP'"{print $3}' pctools/linux/card_debug_pin`
+	    MS=`awk  '$0~"'$PACK_CHIP'"{print $4}' pctools/linux/card_debug_pin`
+	    CK=`awk  '$0~"'$PACK_CHIP'"{print $5}' pctools/linux/card_debug_pin`
+	    DO=`awk  '$0~"'$PACK_CHIP'"{print $6}' pctools/linux/card_debug_pin`
+	    DI=`awk  '$0~"'$PACK_CHIP'"{print $7}' pctools/linux/card_debug_pin`
+
+	    sed -i s'/jtag_ms = /jtag_ms = '$MS'/g' out/awk_debug_card0
+	    sed -i s'/jtag_ck = /jtag_ck = '$CK'/g' out/awk_debug_card0
+	    sed -i s'/jtag_do = /jtag_do = '$DO'/g' out/awk_debug_card0
+	    sed -i s'/jtag_di = /jtag_di = '$DI'/g' out/awk_debug_card0
+	    sed -i s'/uart_debug_tx =/uart_debug_tx = '$TX'/g' out/awk_debug_card0
+	    sed -i s'/uart_debug_rx =/uart_debug_rx = '$RX'/g' out/awk_debug_card0
+	    sed -i s'/uart_tx =/uart_tx = '$TX'/g' out/awk_debug_card0
+	    sed -i s'/uart_rx =/uart_rx = '$RX'/g' out/awk_debug_card0
+	    awk -f out/awk_debug_card0 out/sys_config.fex > out/a.fex
+	    rm out/sys_config.fex
+	    mv out/a.fex out/sys_config.fex
+	    echo "uart -> card0 !!!"
+	fi
+    fi
+
+    cp -rf chips/$PACK_CHIP/tools/split_xxxx.fex  chips/$PACK_CHIP/boot-resource/boot-resource chips/$PACK_CHIP/boot-resource/boot-resource.ini \
+        out/
+
+	cp -rf chips/$PACK_CHIP/tools/* out/
+
+    cp -v chips/$PACK_CHIP/bin/boot0_nand_$PACK_CHIP.bin   out/boot0_nand.fex
+    cp -v chips/$PACK_CHIP/bin/boot0_sdcard_$PACK_CHIP.bin out/boot0_sdcard.fex
+
+    cp -v chips/$PACK_CHIP/bin/fes1_$PACK_CHIP.bin 	       out/fes1.fex
+
+	cp -v chips/$PACK_CHIP/bin/u-boot-$PACK_CHIP.bin 	   out/u-boot.fex
+	cp -v chips/$PACK_CHIP/bin/uefi-$PACK_CHIP.bin 	   out/uefi.fex
+    cd out/
+
+
+    sed -i 's/\\boot-resource/\/boot-resource/g' boot-resource.ini
+    sed -i 's/\\\\/\//g' image.cfg
+    sed -i 's/imagename/;imagename/g' image.cfg
+
+    if [ $PACK_DEBUG = card0 ]; then
+	    IMG_NAME="${PACK_CHIP}_${PACK_PLATFORM}_${PACK_BOARD}_$PACK_DEBUG.img"
+    else
+        IMG_NAME="${PACK_CHIP}_${PACK_PLATFORM}_${PACK_BOARD}.img"
+    fi
+    echo "imagename = $IMG_NAME" >> image.cfg
+    echo "" >> image.cfg
+
+    	busybox unix2dos sys_config.fex
+    	busybox unix2dos sys_partition.fex
+    	script sys_config.fex
+		script sys_partition.fex
+		cp sys_config.bin config.fex
+
+		update_boot0 boot0_nand.fex   sys_config.bin NAND
+    	update_boot0 boot0_sdcard.fex sys_config.bin SDMMC_CARD
+
+		update_uboot u-boot.fex  sys_config.bin
+		update_uboot uefi.fex  sys_config.bin
+
+		update_fes1  fes1.fex  sys_config.bin
+
+    update_mbr sys_partition.bin  4
+    cp -v uefi.fex boot-resource/
+
+    fsbuild boot-resource.ini split_xxxx.fex
+
+    # get bootloader.fex
+    # mv bootfs.fex bootloader.fex
+
+    # get env.fex
+    u_boot_env_gen env.cfg env.fex
+
+    # get other images from android build
+    ln -s $CRANE_IMAGE_OUT/boot.img boot.fex
+    ln -s $CRANE_IMAGE_OUT/system.img system.fex
+    ln -s $CRANE_IMAGE_OUT/recovery.img recovery.fex
+
+    # checksum for all fex
+    FileAddSum bootloader.fex vbootloader.fex
+    FileAddSum env.fex venv.fex
+    FileAddSum boot.fex vboot.fex
+    FileAddSum system.fex vsystem.fex
+    FileAddSum recovery.fex vrecovery.fex
+
+    dragon image.cfg sys_partition.fex
+
+    if [ -e ${IMG_NAME} ]; then
+        mv ${IMG_NAME} ../${IMG_NAME}
+        echo '---------image is at-------------'
+        echo -e '\033[0;31;1m'
+        echo ${ROOT_DIR}/${IMG_NAME}
+        echo -e '\033[0m'
+    fi
+
+    cd - 1>/dev/null
+}
+
+do_pack_linux0()
+{
+    printf "!!!Packing for Linux!!!\n"
+
+    if [ -z "$LICHEE_OUT" ]; then
+       # LICHEE_OUT=`cd ../../out; pwd`
+       echo "Please Set Linux Image Path to LICHEE_OUT env"
+       exit 1
+    fi
+
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/default/* out/ 2>/dev/null
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/$PACK_BOARD/*.fex out/ 2>/dev/null
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/$PACK_BOARD/*.cfg out/ 2>/dev/null
+
+    if [ $PACK_CHIP = sun8iw1p1 ]; then
+				if [ $PACK_DEBUG = card0 ]; then
+				    cp $TOOLS_DIR/awk_debug_card0 out/awk_debug_card0
+				    TX=`awk  '$0~"a31"{print $2}' pctools/linux/card_debug_pin`
+				    RX=`awk  '$0~"a31"{print $3}' pctools/linux/card_debug_pin`
+				    sed -i s'/uart_debug_tx =/uart_debug_tx = '$TX'/g' out/awk_debug_card0
+				    sed -i s'/uart_debug_rx =/uart_debug_rx = '$RX'/g' out/awk_debug_card0
+				    sed -i s'/uart_tx =/uart_tx = '$TX'/g' out/awk_debug_card0
+				    sed -i s'/uart_rx =/uart_rx = '$RX'/g' out/awk_debug_card0
+				    awk -f out/awk_debug_card0 out/sys_config.fex > out/a.fex
+				    rm out/sys_config.fex
+				    mv out/a.fex out/sys_config.fex
+				    echo "uart -> card0 !!!"
+				fi
+    fi
+
+    cp -rf chips/$PACK_CHIP/tools/split_xxxx.fex  chips/$PACK_CHIP/boot-resource/boot-resource chips/$PACK_CHIP/boot-resource/boot-resource.ini \
+        out/
+
+	#cp -rf chips/$PACK_CHIP/tools/usbtool.fex chips/$PACK_CHIP/tools/cardtool.fex chips/$PACK_CHIP/tools/cardscript.fex \
+	    out/
+    cp -rf chips/$PACK_CHIP/tools/* out/
+
+    cp -v chips/$PACK_CHIP/bin/boot0_nand_$PACK_CHIP.bin   out/boot0_nand.fex
+    cp -v chips/$PACK_CHIP/bin/boot0_sdcard_$PACK_CHIP.bin out/boot0_sdcard.fex
+
+	cp -v chips/$PACK_CHIP/bin/u-boot-$PACK_CHIP.bin 	   out/u-boot.fex
+    cp -v chips/$PACK_CHIP/bin/fes1_$PACK_CHIP.bin 	       out/fes1.fex
+
+	cp -v chips/$PACK_CHIP/bin/uefi-$PACK_CHIP.bin 	   out/uefi.fex
+
+    cd out/
+
+    sed -i 's/\\boot-resource/\/boot-resource/g' boot-resource.ini
+    sed -i 's/\\\\/\//g' image.cfg
+    sed -i 's/imagename/;imagename/g' image.cfg
+
+    if [ $PACK_DEBUG = card0 ]; then
+        IMG_NAME="${PACK_CHIP}_${PACK_PLATFORM}_${PACK_BOARD}_$PACK_DEBUG.img"
+    else
+        IMG_NAME="${PACK_CHIP}_${PACK_PLATFORM}_${PACK_BOARD}.img"
+    fi
+    echo "imagename = $IMG_NAME" >> image.cfg
+    echo "" >> image.cfg
+
+    	busybox unix2dos sys_config.fex
+    	busybox unix2dos sys_partition.fex
+    	script sys_config.fex
+		script sys_partition.fex
+        cp sys_config.bin config.fex
+
+	update_boot0 boot0_nand.fex   sys_config.bin NAND
+    update_boot0 boot0_sdcard.fex sys_config.bin SDMMC_CARD
+
+	update_uboot u-boot.fex  sys_config.bin
+	update_uboot uefi.fex  sys_config.bin
+	#update_uefi uefi.fex  sys_config.bin
+
+    cp -v uefi.fex boot-resource/
+	
+    update_fes1  fes1.fex  sys_config.bin
+
+    update_mbr sys_partition.bin  4
+
+    fsbuild boot-resource.ini split_xxxx.fex
+
+    # get bootloader.fex
+    # mv bootfs.fex bootloader.fex
+
+    # get env.fex
+    u_boot_env_gen env.cfg env.fex
+
+    # get the boot.img
+    ln -s $LICHEE_OUT/boot.img boot.fex
+
+    # get the rootfs
+    #echo get rootfs from $LICHEE_OUT
+    ln -s $LICHEE_OUT/rootfs.ext4 rootfs.fex
+
+    #get arisc
+    ln -s $LICHEE_OUT/arisc arisc.fex
+
+    # checksum for all fex
+    # FileAddSum bootloader.fex vbootloader.fex
+    # FileAddSum env.fex venv.fex
+    # FileAddSum boot.fex vboot.fex
+
+    dragon image.cfg sys_partition.fex
+
+    if [ -e ${IMG_NAME} ]; then
+        mv ${IMG_NAME} ../${IMG_NAME}
+        echo '---------image is at-------------'
+        echo -e '\033[0;31;1m'
+        echo ${ROOT_DIR}/${IMG_NAME}
+        echo -e '\033[0m'
+    fi
+
+    cd - 1>/dev/null
+}
+
+do_pack_dragonboard()
+{
+    printf "!!!Packing for dragonboard!!!\n"
+
+    if [ -z "$LICHEE_OUT" ]; then
+        LICHEE_OUT=`cd ../../out; pwd`
+    fi
+
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/default/* out/
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/$PACK_BOARD/*.fex out/ 2>/dev/null
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/$PACK_BOARD/*.cfg out/ 2>/dev/null
+
+    cp -rf efex/split_xxxx.fex  wboot/bootfs wboot/bootfs.ini \
+        out/
+
+    cp -rf boot/boot0_nand.bin out/boot0_nand.bin
+    cp -rf boot/boot1_nand.bin out/boot1_nand.fex
+
+    cp -rf boot/boot0_sdcard.bin out/boot0_sdcard.fex
+    cp -rf boot/boot1_sdcard.bin out/boot1_sdcard.fex
+
+    cd out/
+
+    cp -v $LICHEE_OUT/dragonboard/u-boot.bin bootfs/linux/
+
+    sed -i 's/\\bootfs/\/bootfs/g' bootfs.ini
+    sed -i 's/\\\\/\//g' image.cfg
+    sed -i 's/imagename/;imagename/g' image.cfg
+
+    if [ $PACK_DEBUG = card0 ]; then
+	    IMG_NAME="${PACK_CHIP}_${PACK_PLATFORM}_${PACK_BOARD}_$PACK_DEBUG.img"
+    else
+        IMG_NAME="${PACK_CHIP}_${PACK_PLATFORM}_${PACK_BOARD}.img"
+    fi
+    echo "imagename = $IMG_NAME" >> image.cfg
+    echo "" >> image.cfg
+
+
+    	busybox unix2dos sys_config.fex
+    	busybox unix2dos sys_partition.fex
+    	script sys_config.fex
+		script sys_partition.fex
+
+        cp test_config.fex bootfs/test_config.fex
+        busybox unix2dos test_config.fex
+        script test_config.fex
+        cp test_config.bin bootfs/test_config.bin
+
+		update_boot0 boot0_nand.bin   sys_config.bin NAND
+    	update_boot0 boot0_sdcard.fex sys_config.bin SDMMC_CARD
+
+		update_boot1 boot1_nand.fex   sys_config.bin NAND
+    	update_boot1 boot1_sdcard.fex sys_config.bin SDMMC_CARD
+
+		cp sys_config.bin bootfs/script.bin
+
+    update_mbr sys_partition.bin  4
+
+    fsbuild bootfs.ini split_xxxx.fex
+
+    # get bootloader.fex
+    mv bootfs.fex bootloader.fex
+
+    # get env.fex
+    u_boot_env_gen env.cfg env.fex
+
+    # get other images from dragonboard build
+    ln -s $LICHEE_OUT/dragonboard/boot.img boot.fex
+    ln -s $LICHEE_OUT/dragonboard/rootfs.ext4 rootfs.fex
+
+    dragon image.cfg sys_partition.fex
+
+    if [ -e ${IMG_NAME} ]; then
+        mv ${IMG_NAME} ../${IMG_NAME}
+        echo '---------image is at-------------'
+        echo -e '\033[0;31;1m'
+        echo ${ROOT_DIR}/${IMG_NAME}
+        echo -e '\033[0m'
+    fi
+
+    cd - 1>/dev/null
+}
+
+do_pack_prvt()
+{
+    printf "!!!Packing for Private!!!\n"
+
+    if [ -z "$LICHEE_OUT" ]; then
+        LICHEE_OUT=`cd ../../out; pwd`
+    fi
+
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/default/* out/ 2>/dev/null
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/$PACK_BOARD/*.fex out/ 2>/dev/null
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/$PACK_BOARD/*.cfg out/ 2>/dev/null
+
+
+    cp -rf efex/split_xxxx.fex  wboot/bootfs wboot/bootfs.ini \
+        out/
+
+    cp -rf boot/boot0_nand.bin out/boot0_nand.bin
+    cp -rf boot/boot1_nand.bin out/boot1_nand.fex
+
+    cp -rf boot/boot0_sdcard.bin out/boot0_sdcard.fex
+    cp -rf boot/boot1_sdcard.bin out/boot1_sdcard.fex
+
+	cd out/
+
+	rm -rf bootfs/boot.axf bootfs/sprite.axf
+	cp -rf bootfs/prvt.axf bootfs/boot.axf
+	cp -rf bootfs/prvt.axf bootfs/sprite.axf
+
+
+    sed -i 's/\\bootfs/\/bootfs/g' bootfs.ini
+    sed -i 's/\\\\/\//g' image.cfg
+    sed -i 's/imagename/;imagename/g' image.cfg
+
+    IMG_NAME="${PACK_CHIP}_${PACK_FUNC}.img"
+
+    echo "imagename = $IMG_NAME" >> image.cfg
+    echo "" >> image.cfg
+
+    	busybox unix2dos sys_config.fex
+    	busybox unix2dos sys_partition_private.fex
+    	script sys_config.fex
+		script sys_partition_private.fex
+
+		update_boot0 boot0_nand.bin   sys_config.bin NAND
+    	update_boot0 boot0_sdcard.fex sys_config.bin SDMMC_CARD
+
+		update_boot1 boot1_nand.fex   sys_config.bin NAND
+    	update_boot1 boot1_sdcard.fex sys_config.bin SDMMC_CARD
+
+		cp sys_config.bin bootfs/script.bin
+
+    update_mbr sys_partition_private.bin  4
+
+    fsbuild bootfs.ini split_xxxx.fex
+
+	mv bootfs.fex bootloader.fex
+
+    dragon image.cfg sys_partition_private.fex
+
+    if [ -e ${IMG_NAME} ]; then
+        mv ${IMG_NAME} ../${IMG_NAME}
+        echo '---------image is at-------------'
+        echo -e '\033[0;31;1m'
+        echo ${ROOT_DIR}/${IMG_NAME}
+        echo -e '\033[0m'
+    fi
+
+    cd - 1>/dev/null
+}
+
+
+do_pack_windows()
+{
+    printf "!!!Packing for windows!!!\n"
+
+    if [ -z "$LICHEE_OUT" ]; then
+        LICHEE_OUT=`cd ../../out; pwd`
+    fi
+
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/default/* out/ 2>/dev/null
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/$PACK_BOARD/*.fex out/ 2>/dev/null
+    cp -v chips/$PACK_CHIP/configs/$PACK_PLATFORM/$PACK_BOARD/*.cfg out/ 2>/dev/null
+
+    if [ $PACK_CHIP = sun9iw1p1 ]; then
+				if [ $PACK_DEBUG = card0 ]; then
+				  	  cp $TOOLS_DIR/awk_debug_card0 out/awk_debug_card0
+					    TX=`awk  '$0~"'$PACK_CHIP'"{print $2}' pctools/linux/card_debug_pin`
+					    RX=`awk  '$0~"'$PACK_CHIP'"{print $3}' pctools/linux/card_debug_pin`
+					    MS=`awk  '$0~"'$PACK_CHIP'"{print $4}' pctools/linux/card_debug_pin`
+					    CK=`awk  '$0~"'$PACK_CHIP'"{print $5}' pctools/linux/card_debug_pin`
+					    DO=`awk  '$0~"'$PACK_CHIP'"{print $6}' pctools/linux/card_debug_pin`
+					    DI=`awk  '$0~"'$PACK_CHIP'"{print $7}' pctools/linux/card_debug_pin`
+				
+					    sed -i s'/jtag_ms = /jtag_ms = '$MS'/g' out/awk_debug_card0
+					    sed -i s'/jtag_ck = /jtag_ck = '$CK'/g' out/awk_debug_card0
+					    sed -i s'/jtag_do = /jtag_do = '$DO'/g' out/awk_debug_card0
+					    sed -i s'/jtag_di = /jtag_di = '$DI'/g' out/awk_debug_card0
+					    sed -i s'/uart_debug_tx =/uart_debug_tx = '$TX'/g' out/awk_debug_card0
+					    sed -i s'/uart_debug_rx =/uart_debug_rx = '$RX'/g' out/awk_debug_card0
+					    sed -i s'/uart_tx =/uart_tx = '$TX'/g' out/awk_debug_card0
+					    sed -i s'/uart_rx =/uart_rx = '$RX'/g' out/awk_debug_card0
+					    awk -f out/awk_debug_card0 out/sys_config.fex > out/a.fex
+					    rm out/sys_config.fex
+					    mv out/a.fex out/sys_config.fex
+					    echo "uart -> card0 !!!"
+				fi
+    fi
+
+    cp -rf chips/$PACK_CHIP/tools/split_xxxx.fex  chips/$PACK_CHIP/boot-resource/boot-resource chips/$PACK_CHIP/boot-resource/boot-resource.ini \
+        out/
+
+	#cp -rf chips/$PACK_CHIP/tools/usbtool.fex chips/$PACK_CHIP/tools/cardtool.fex chips/$PACK_CHIP/tools/cardscript.fex \
+	    out/
+    cp -rf chips/$PACK_CHIP/tools/* out/
+
+    cp -v chips/$PACK_CHIP/bin/boot0_nand_$PACK_CHIP.bin   out/boot0_nand.fex
+    cp -v chips/$PACK_CHIP/bin/boot0_sdcard_$PACK_CHIP.bin out/boot0_sdcard.fex
+
+	cp -v chips/$PACK_CHIP/bin/u-boot-$PACK_CHIP.bin 	   out/u-boot.fex
+    cp -v chips/$PACK_CHIP/bin/fes1_$PACK_CHIP.bin 	       out/fes1.fex
+
+	cp -v chips/$PACK_CHIP/bin/uefi-$PACK_CHIP.bin 	   out/uefi.fex
+
+    cd out/
+
+    sed -i 's/\\boot-resource/\/boot-resource/g' boot-resource.ini
+    sed -i 's/\\\\/\//g' image.cfg
+    sed -i 's/imagename/;imagename/g' image.cfg
+
+    if [ $PACK_DEBUG = card0 ]; then
+        IMG_NAME="${PACK_CHIP}_${PACK_PLATFORM}_${PACK_BOARD}_$PACK_DEBUG.img"
+    else
+        IMG_NAME="${PACK_CHIP}_${PACK_PLATFORM}_${PACK_BOARD}.img"
+    fi
+    echo "imagename = $IMG_NAME" >> image.cfg
+    echo "" >> image.cfg
+
+    	busybox unix2dos sys_config.fex
+    	busybox unix2dos sys_partition.fex
+    	script sys_config.fex
+		script sys_partition.fex
+        cp sys_config.bin config.fex
+
+	update_boot0 boot0_nand.fex   sys_config.bin NAND
+    update_boot0 boot0_sdcard.fex sys_config.bin SDMMC_CARD
+
+	update_uboot u-boot.fex  sys_config.bin
+	update_uboot uefi.fex  sys_config.bin
+	#update_uefi uefi.fex  sys_config.bin
+
+    cp -v uefi.fex boot-resource/
+	
+    update_fes1  fes1.fex  sys_config.bin
+
+    update_mbr sys_partition.bin  4
+
+    fsbuild boot-resource.ini split_xxxx.fex
+
+    # get bootloader.fex
+    # mv bootfs.fex bootloader.fex
+
+    # get env.fex
+    u_boot_env_gen env.cfg env.fex
+
+    # get the boot.img
+    #ln -s $LICHEE_OUT/boot.img boot.fex
+
+    # get the rootfs
+    #echo get rootfs from $LICHEE_OUT
+    #ln -s $LICHEE_OUT/rootfs.ext4 rootfs.fex
+
+    # checksum for all fex
+    # FileAddSum bootloader.fex vbootloader.fex
+    # FileAddSum env.fex venv.fex
+    # FileAddSum boot.fex vboot.fex
+
+    dragon image.cfg sys_partition.fex
+
+    if [ -e ${IMG_NAME} ]; then
+        mv ${IMG_NAME} ../${IMG_NAME}
+        echo '---------image is at-------------'
+        echo -e '\033[0;31;1m'
+        echo ${ROOT_DIR}/${IMG_NAME}
+        echo -e '\033[0m'
+    fi
+
+    cd - 1>/dev/null
+}
+
+
+
+
+LICHEE_OUT="../linux_image"
+CRANE_IMAGE_OUT="../android_image"
+do_prepare
+do_pack_${PACK_PLATFORM}
+do_clean

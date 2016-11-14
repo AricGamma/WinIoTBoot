@@ -1,0 +1,57 @@
+#/** @file
+#  
+#  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+#  http://www.allwinnertech.com
+#
+#  Martin.Zheng <martinzheng@allwinnertech.com>
+#  
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#  
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Boot0
+  FILE_GUID                      = EE00CEA5-22F8-483B-AD4B-851957062DE4
+  MODULE_TYPE                    = SEC
+  VERSION_STRING                 = 1.0
+
+[Sources.common]
+  boot0_main.c
+  main/boot0_hash.c
+  main/boot0_entry.S
+  load_mmc/load_boot1_from_sdmmc.c
+  libs/check.c
+  libs/common.c
+  libs/memcpy_align16.S
+  libs/mmu.c
+  
+[Packages]
+  EmbeddedPkg/EmbeddedPkg.dec
+  MdePkg/MdePkg.dec
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+
+[LibraryClasses]
+  Boot0SdMmcLib
+  SunxiSpl
+  SplLib
+  DramLib
+#  Sun50iW1P1DramLib
+
+[Guids]
+	
+[Protocols]
+  
+[Pcd]
+ gArmTokenSpaceGuid.PcdFdBaseAddress
+  
+[Depex]
+  TRUE

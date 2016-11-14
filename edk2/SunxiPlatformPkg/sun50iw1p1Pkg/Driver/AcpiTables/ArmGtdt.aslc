@@ -1,0 +1,84 @@
+/** @file
+*
+*  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+*  http://www.allwinnertech.com
+*
+*  Martin.Zheng <martinzheng@allwinnertech.com>
+*  
+*  This program and the accompanying materials                          
+*  are licensed and made available under the terms and conditions of the BSD License         
+*  which accompanies this distribution.  The full text of the license may be found at        
+*  http://opensource.org/licenses/bsd-license.php                                            
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+*
+**/
+
+//#include <IndustryStandard/Acpi.h>
+#include "ArmPlatform.h"
+
+///
+/// GTDT Revision (as defined in ACPI 1.0b specification).
+///
+#define EFI_ACPI_OEM_GTDT_REVISION 0x01
+
+#define GTDT_GLOBAL_FLAG	(0)
+
+//#define GTDT_TIMER_FLAG	(EFI_ACPI_5_0_GTDT_TIMER_FLAG_TIMER_INTERRUPT_POLARITY) //active low  level trigered
+#define GTDT_TIMER_FLAG	(0) //active high  level trigered
+
+#define NONSECURE_PL1_TIMER_GSIV  (30)
+#define SECURE_PL1_TIMER_GSIV     (29)
+#define VIRTUAL_TIMER_GSIV        (27)
+#define NONSECURE_PL2_TIMER_GSIV  (26)
+
+EFI_ACPI_5_0_GENERIC_TIMER_DESCRIPTION_TABLE Gtdt = {
+
+  EFI_ACPI_5_0_GENERIC_TIMER_DESCRIPTION_TABLE_SIGNATURE,
+  sizeof (EFI_ACPI_5_0_GENERIC_TIMER_DESCRIPTION_TABLE),
+  EFI_ACPI_5_0_GENERIC_TIMER_DESCRIPTION_TABLE_REVISION,
+
+  //
+  // Checksum will be updated at runtime
+  //
+  0x00,
+  
+  //
+  // It is expected that these values will be programmed at runtime
+  //
+  EFI_ACPI_OEM_ID,
+  
+  EFI_ACPI_OEM_TABLE_ID,
+  EFI_ACPI_OEM_GTDT_REVISION,
+  EFI_ACPI_CREATOR_ID,
+  EFI_ACPI_CREATOR_REVISION,
+
+  0,							//physical address of the GIT,as this time isn't memory mapped, so set this to zero.
+  GTDT_GLOBAL_FLAG,				//global flag: bit0=0, memory mapped block not present;bit1=0,active low
+
+  SECURE_PL1_TIMER_GSIV,
+  GTDT_TIMER_FLAG,
+
+  NONSECURE_PL1_TIMER_GSIV,
+  GTDT_TIMER_FLAG,
+  
+  VIRTUAL_TIMER_GSIV,
+  GTDT_TIMER_FLAG,
+  
+  NONSECURE_PL2_TIMER_GSIV,
+  GTDT_TIMER_FLAG
+
+};
+
+VOID*
+ReferenceAcpiTable (
+  VOID
+  )
+{
+  //
+  // Reference the table being generated to prevent the optimizer from removing the 
+  // data structure from the exeutable
+  //
+  return (VOID*)&Gtdt;
+}

@@ -1,0 +1,148 @@
+## @file
+#
+#  Component description file for GraphicsConsole module
+#
+#  This is the main routine for initializing the Graphics Console support routines.
+#
+#  Copyright (c) 2012, Samsung Electronics Co. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution. The full text of the license may be found at
+#  http://opensource.crg/licenses/bsd-license.php
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = DisplayDxe
+  FILE_GUID                      = c5deae31-fad2-4030-841b-cfc9644d2c5b
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = DisplayDxeInitialize
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 IPF EBC
+#
+#  DRIVER_BINDING                =  gGraphicsConsoleDriverBinding
+#  COMPONENT_NAME                =  gGraphicsConsoleComponentName
+#  COMPONENT_NAME2               =  gGraphicsConsoleComponentName2
+#
+
+[Sources]
+
+  DisplayDxe.c
+  pwm/sunxi-pwm.c																															
+  sunxi_display/de_v2.c
+  
+  sunxi_video_v2/dev_disp.c
+  sunxi_video_v2/OSAL/OSAL_Clock.c
+  sunxi_video_v2/OSAL/OSAL_Int.c
+  sunxi_video_v2/OSAL/OSAL_IrqLock.c																																				
+  sunxi_video_v2/OSAL/OSAL_Cache.c																																				
+  sunxi_video_v2/OSAL/OSAL_Lib_C.c																																				
+  sunxi_video_v2/OSAL/OSAL_Pin.c																																				
+  sunxi_video_v2/OSAL/OSAL_Parser.c	
+  sunxi_video_v2/OSAL/OSAL_Power.c		
+  
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/de_be.c
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/de_fe.c
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/de_hwc.c 
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/de_clock.c
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/de_layer.c 
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/de_lcd.c 
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/vga_std.c
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/iep_cmu.c 
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/iep_deu.c 
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/iep_deu_ebios.c
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/iep_drc.c 
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/iep_drc_ebios.c
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/disp_al.c
+  sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/dsi.c
+  
+  sunxi_video_v2/de_bsp/de/disp_features.c 
+  sunxi_video_v2/de_bsp/de/disp_private.c
+  sunxi_video_v2/de_bsp/de/disp_hdmi.c
+  sunxi_video_v2/de_bsp/de/disp_lcd.c 
+  sunxi_video_v2/de_bsp/de/disp_layer.c 
+  sunxi_video_v2/de_bsp/de/disp_cursor.c 
+  sunxi_video_v2/de_bsp/de/disp_manager.c
+  sunxi_video_v2/de_bsp/de/disp_smart_backlight.c 
+  sunxi_video_v2/de_bsp/de/disp_smart_color.c 
+  sunxi_video_v2/de_bsp/de/disp_display.c
+  
+  sunxi_video_v2/de_bsp/lcd/lcd_panel_cfg.c  
+  sunxi_video_v2/de_bsp/lcd/dev_lcd.c 
+  sunxi_video_v2/de_bsp/lcd/lcd_source_interface.c
+  sunxi_video_v2/de_bsp/lcd/panels/panels.c 
+  sunxi_video_v2/de_bsp/lcd/panels/default_panel.c 
+  sunxi_video_v2/de_bsp/lcd/panels/tft720x1280.c 
+  sunxi_video_v2/de_bsp/lcd/panels/lp907qx.c
+  sunxi_video_v2/de_bsp/lcd/panels/starry768x1024.c 
+  sunxi_video_v2/de_bsp/lcd/panels/sl698ph_720p.c
+  sunxi_video_v2/de_bsp/lcd/panels/lp079x01.c
+  sunxi_video_v2/de_bsp/lcd/panels/B116XAN03.c	
+  
+  sunxi_video_v2/de_bsp/hdmi/aw/hdmi_core.c 
+  sunxi_video_v2/de_bsp/hdmi/aw/hdmi_edid.c 
+  sunxi_video_v2/de_bsp/hdmi/aw/hdmi_interface.c 
+  sunxi_video_v2/de_bsp/hdmi/drv_hdmi.c
+  sunxi_video_v2/de_bsp/hdmi/aw/hdmi_hal.c 
+  
+[binaries.common]
+ # LIB| sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/dsi.lib
+ # LIB| sunxi_video_v2/de_bsp/de/lowlevel_sun9iw1/edp.lib
+  
+    
+[BuildOptions]
+#*_ARMLINUXGCC_ARM_DLINK_FLAGS ==  /home/wangwei/seattle_uefi/firmware/edk2/SunxiPlatformPkg/Driver/SunxiDisplayDxe/sunxi_video_v2/libdsi /home/wangwei/seattle_uefi/firmware/edk2/SunxiPlatformPkg/Driver/SunxiDisplayDxe/sunxi_video_v2/libedp
+ 
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  UefiLib
+  MemoryAllocationLib
+  UefiDriverEntryPoint
+  IoLib
+  TimerLib
+  SysConfigLib
+  DmaLib
+  PrintLib
+  ArmLib
+  EdpLib
+  HdcpLib
+  SunxiBootInfoLib
+#  SunxiDmaLib
+
+	
+[Protocols]
+  gEfiGraphicsOutputProtocolGuid
+  gHardwareInterruptProtocolGuid
+  gAxpPowerProtocolGuid
+  
+[Guids]
+
+[Pcd]
+  gArmTokenSpaceGuid.PcdFdBaseAddress
+  gArmTokenSpaceGuid.PcdFdSize
+
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
+  gArmTokenSpaceGuid.PcdSystemMemorySize
+  
+  gSunxiTokenSpaceGuid.PcdFrameBufferBase
+  gSunxiTokenSpaceGuid.PcdFrameBufferSize
+  
+[Depex]
+  gHardwareInterruptProtocolGuid
+ 

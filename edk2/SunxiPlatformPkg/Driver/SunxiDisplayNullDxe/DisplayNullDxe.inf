@@ -1,0 +1,83 @@
+## @file
+#
+#  Component description file for GraphicsConsole module
+#
+#  This is the main routine for initializing the Graphics Console support routines.
+#
+#  Copyright (c) 2012, Samsung Electronics Co. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution. The full text of the license may be found at
+#  http://opensource.crg/licenses/bsd-license.php
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = DisplayDxe
+  FILE_GUID                      = 9B8D9443-063B-4277-9840-E4C90189093C
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = DisplayDxeInitialize
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 IPF EBC
+#
+#  DRIVER_BINDING                =  gGraphicsConsoleDriverBinding
+#  COMPONENT_NAME                =  gGraphicsConsoleComponentName
+#  COMPONENT_NAME2               =  gGraphicsConsoleComponentName2
+#
+
+[Sources]
+
+  DisplayNullDxe.c
+  
+  
+[binaries.common]
+
+  
+    
+[BuildOptions]
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  UefiLib
+  MemoryAllocationLib
+  UefiDriverEntryPoint
+  IoLib
+  TimerLib
+  PrintLib
+  ArmLib
+
+[Protocols]
+  gEfiGraphicsOutputProtocolGuid
+  gHardwareInterruptProtocolGuid
+  
+[Guids]
+
+[Pcd]
+  gArmTokenSpaceGuid.PcdFdBaseAddress
+  gArmTokenSpaceGuid.PcdFdSize
+
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
+  gArmTokenSpaceGuid.PcdSystemMemorySize
+  
+  gSunxiTokenSpaceGuid.PcdFrameBufferBase
+  gSunxiTokenSpaceGuid.PcdFrameBufferSize
+  
+[Depex]
+  gHardwareInterruptProtocolGuid
+ 

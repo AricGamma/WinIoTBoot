@@ -1,0 +1,43 @@
+#/** @file
+#
+#  Copyright (c) 2012, Samsung Electronics Co. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SunxiCheckLib
+  FILE_GUID                      = 07D54148-F2F3-EA36-5459-21A61DD36985
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = SunxiCheckLib
+
+[Sources.common]
+  
+  SunxiCheckLib.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+  
+[LibraryClasses]
+  DebugLib
+  BaseLib
+  BaseMemoryLib
+
+[Guids]
+
+
+[Protocols]
+ 
+[FixedPcd]
+
+[Depex]

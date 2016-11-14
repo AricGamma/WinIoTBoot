@@ -1,0 +1,59 @@
+#
+# NOTE! Don't add files that are generated in specific
+# subdirectories here. Add them in the ".gitignore" file
+# in that subdirectory instead.
+#
+# Normal rules
+#
+
+*.rej
+*.orig
+*.a
+*.o
+*.d
+*.pyc
+*~
+*.swp
+*.patch
+*.bin
+
+#
+# Top-level generic files
+#
+/BaseTools/Source/C
+
+#
+# the BeagleBoard gen hearder tools
+#
+/BeagleBoardPkg/Tools/generate_image
+
+#
+# SI files
+#
+/Chnchar.em
+/*EDK2_SI.*
+#
+# Generated files
+#
+/Build
+
+
+# stgit generated dirs
+patches-*
+.stgit-edit.txt
+
+# quilt's files
+patches
+series
+
+# gdb files
+.gdb_history
+
+# cscope files
+cscope.*
+
+# tags files
+/tags
+/ctags
+/etags
+

@@ -1,0 +1,54 @@
+#/** @file
+#  
+#  Copyright (c) 2007-2014, Allwinner Technology Co., Ltd. All rights reserved.
+#  http://www.allwinnertech.com
+#
+#  Martin.Zheng <martinzheng@allwinnertech.com>
+#  
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#  
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Sun9iW1ResetSystemLib
+  FILE_GUID                      = 781371a2-3fdd-41d4-96a1-7b34cbc9e895
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = EfiResetSystemLib
+
+
+[Sources.common]
+  ResetSystemLib.c
+
+[Packages]
+  ArmPkg/ArmPkg.dec
+  MdePkg/MdePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  SunxiPlatformPkg/sun50iw1p1Pkg/sun50iw1p1Pkg.dec
+  SunxiPlatformPkg/SunxiPlatformPkg.dec
+
+[Pcd.common]
+  gArmTokenSpaceGuid.PcdCpuResetAddress
+  gEmbeddedTokenSpaceGuid.PcdEmbeddedFdBaseAddress
+  
+[LibraryClasses]
+	DxeServicesTableLib
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  UefiRuntimeLib
+  DebugLib
+  BaseLib
+  IoLib
+  MemoryAllocationLib
+  ArmLib
+  CacheMaintenanceLib
+
+[Guids]
+  gEfiEventVirtualAddressChangeGuid
