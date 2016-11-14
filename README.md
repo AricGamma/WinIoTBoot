@@ -27,7 +27,7 @@ About UEFI and EDK2 open source project, please refer to links below:
 - UEFI: [http://www.uefi.org/](http://www.uefi.org/)
 - EDK2: [http://www.tianocore.org/](http://www.tianocore.org)
 
-## [2. Source code](#$2)
+<h2 id="2">2. Source code</h2>
 
 Please get the source code of AllWinner UEFI firmware from [here](http://link).
 
@@ -102,7 +102,7 @@ Please get the source code of AllWinner UEFI firmware from [here](http://link).
 
 ---
 
-## [3. Build AllWinner UEFI image]($#3)
+<h2 id="3">3. Build AllWinner UEFI image</h2>
 
 There are two steps to build a UEFI image. Firstly, build a FD image via the EDK2 framework and copy that image to *./edk2/SunxiPlatformPkg/pack/chips*. Secondly, during packaging stage, after configured the FD image by the configuration files of a specific platform under *./edk2/SunxiPlatformPkg/pack/chips/[$chip_alias]/configs/[$board_alias]* directory, we combine the FD image with arm trusted firmware to generate a *boot_package.fex*.
 
@@ -128,7 +128,7 @@ b. Get the *boot_package.fex* generated under *./edk2/SunxiPlatformPkg/pack/out*
 >       Just the same as "build boot0" except the param of step a need to be "fes"(./build.sh fes).
 
 
- ## [4. Porting guide]($#4) 
+<h2 id="4">4. Porting guide</h2>
 
  ### 1. How to modify configurations of specific board    
  
@@ -206,7 +206,7 @@ b. Get the *boot_package.fex* generated under *./edk2/SunxiPlatformPkg/pack/out*
         b. Open "sun50iw1p1Pkg.fdf" and add `INF SunxiPlatformPkg/Apps/Hello/Hello.inf` under `[FV.FvMain]`.  
 
 
-## [5. Flash UEFI Image]($#5)
+<h2 id="5">5. Flash UEFI Image</h2>
 
 Please refer to this [doc](https://github.com/Leeway213/Win10-IoT-for-A64-Release-Notes/blob/master/doc/How%20to%20flash%20UEFI%20image.md).
 
