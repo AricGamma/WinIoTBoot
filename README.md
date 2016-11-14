@@ -78,8 +78,7 @@ Please get the source code of AllWinner UEFI firmware from [here](http://link).
             |__boot0Pkg.dsc                 DSC description file of boot0
             |__boot0Pkg.fdf                 FDF description file of boot0
             |__Driver                       Include drivers related to A64 platform
-            |__fesPkg.dsc                   DSC description file of FES
-            |__fesPkg.fdf                   FDF description of FES
+            |__fesPkg.dsc                   DSC description file of FES            |__fesPkg.fdf                   FDF description of FES
             |__Include                      Include some header files related to A64 platform
             |__Library                      Include some libraries related to A64 platform                                |__sun50iw1p1Pkg.dec            DEC description file of A64 platform
             |__sun50iw1p1Pkg.dsc            DSC description file of A64 platfor
@@ -130,22 +129,22 @@ b. Get the *boot_package.fex* generated under *./edk2/SunxiPlatformPkg/pack/out*
 
 <h2 id="4">4. Porting guide</h2>
 
- ### 1. How to modify configurations of specific board    
+### 1. How to modify configurations of specific board    
  
  Navigate to "./edk2/SunxiPlatformPkg/pack/chips/[*SOC_NAME*]/configs/[*BOARD_ALIAS*]/" directory and you can find a file named `sys_config_windows.fex`. Modify this file to customize your board and you don't need to rebuild the project. Just re-package a new UEFI image by executing `./build.sh pack`.    
 
 
- ### 2. Configure GPT partition table  
+### 2. Configure GPT partition table  
 
  Navigate to "./edk2/SunxiPlatformPkg/pack/chips/[*SOC_NAME*]/configs/[*BOARD_ALIAS*]/" directory and get the file named `sys_gpt_windows.fex` to add, delete or modify the partitions. Also you don't need to rebuild all the project but just re-package.  
 
 
- ### 3. Configure SMBIOS
+### 3. Configure SMBIOS
 
  SMBIOS configurations can be found in `sys_config_windows.fex` and please refer to 1st item.  
 
 
- ### 4. Add a new module to UEFI  
+### 4. Add a new module to UEFI  
 
  If you want to add an additional module (e.g. App, Driver or Library) to AllWinner UEFI Firmware, just follow the next steps:
  
